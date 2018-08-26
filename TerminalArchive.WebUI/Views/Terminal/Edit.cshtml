@@ -1,0 +1,103 @@
+﻿@using TerminalArchive.Domain.Models
+@model TerminalArchive.Domain.Models.Terminal
+
+@{
+    ViewBag.Title = "Редактирование учетных данных";
+}
+
+<div class="page-header">
+    <h3>@ViewBag.Title</h3>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div>
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.Id)
+        <table class="table table-striped">
+           
+            @foreach (var property in ViewData.ModelMetadata.Properties)
+            {
+                if (property.PropertyName == "IdGroup")
+                {
+                    <div class="form-group">
+                        <tr>
+                            <td>
+                                <label>@(property.DisplayName ?? property.PropertyName)</label>
+                            </td>
+                            <td>
+                                <div>
+                                    @Html.DropDownListFor(model => model.IdGroup, new SelectList((IEnumerable<Group>)ViewBag.Groups, "Id", "Name", "None"), new { @class = "form-control" })
+                                </div>
+                            </td>
+                        </tr>
+                    </div>
+                }
+                else
+            if (property.PropertyName != "Id"
+                && property.PropertyName != "Orders"
+                && property.PropertyName != "Parameters"
+                && property.PropertyName != "Group")
+                {
+                    <div class="form-group">
+                        <tr>
+                            <td>
+                                <label>@(property.DisplayName ?? property.PropertyName)</label>
+                            </td>
+                            <td>
+                                <div>
+                                    @Html.TextBox(property.PropertyName, null, new { @class = "form-control" })
+                                    @Html.ValidationMessage(property.PropertyName, "", new { @class = "text-danger" })
+                                </div>
+                            </td>
+                        </tr>
+                    </div>
+                }
+            }
+            <div class="form-group">
+                <tr>
+                    <td></td>
+                    <td>
+
+                        <div>
+                            <input type="submit" value="Сохранить" class="btn btn-block btn-primary" style="text-align:center" />
+                        </div>
+
+                    </td>
+                </tr>
+            </div>  
+        </table>     
+        @*<div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.IdHasp, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.IdHasp, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.IdHasp, "", new { @class = "text-danger" })
+            </div>
+        </div>*@
+
+
+    </div>
+}
+@*
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+*@

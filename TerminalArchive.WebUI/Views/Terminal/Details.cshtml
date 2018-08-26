@@ -1,0 +1,82 @@
+﻿@using TerminalArchive.WebUI.HtmlHelpers
+@model TerminalArchive.WebUI.Models.TerminalDetailViewModel
+
+@{
+    ViewBag.Title = "Терминал";
+}
+
+@*<p>
+    @Html.ActionLink("Новый терминал", "Add")
+</p>*@
+
+<div>
+    <h3>Просмотр заказов</h3>
+
+        @Html.Partial("TerminalInfo", Model.Terminal)
+       
+        <div class="table col-md-8 table-striped">
+        @*<table>
+            <thead>
+                <tr>
+                    <th>Id параметра</th>
+                    <th>Терминал</th>
+                    <th>Название</th>
+                    <th>Путь</th>
+                    <th>Значение</th>
+                    <th>Сохранен</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var parametr in Model.Terminal.Parameters)
+            {
+                    <tr>
+                        <td>@parametr.Id</td>
+                        <td>@parametr.TId</td>
+                        <td>@parametr.Name</td>
+                        <td>@parametr.Path</td>
+                        <td>@parametr.Value</td>
+                        <td>@parametr.Saved</td>
+                    </tr>
+                }
+            </tbody>
+        </table>*@
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Способ оплаты</th>
+                    <th>Дата/Время</th>
+                    <th>ТРК</th>
+                    <th>Топливо</th>
+                    <th>Статус заказа</th>
+                    <th>Цена</th>
+                    <th>Предзаказ</th>
+                    <th>Факт</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Terminal.Orders.Values)
+                {
+
+                    var dateTime = DateTime.Now;
+                    var sub = order.Rnn.Substring(6);
+                    DateTime.TryParseExact(sub, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dateTime);
+
+                    <tr>
+                        <td>@order.PaymentName</td>
+                        <td>@dateTime</td>
+                        <td>@order.IdPump</td>
+                        <td>@order.FuelName</td>
+                        <td>@order.StateName</td>
+                        <td>@order.Price р</td>
+                        <td>@order.PreQuantity л (@order.PreSumm р)</td>
+                        <td>@order.Quantity л(@order.Summ р)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+       </div>
+        <div class="btn-group pull-right">
+            @Html.PageLinks(Model.PagingInfo, x => Url.Action("Details", new { page = x }))
+        </div> 
+   </div>

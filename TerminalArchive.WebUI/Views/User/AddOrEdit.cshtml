@@ -1,0 +1,243 @@
+﻿@using TerminalArchive.Domain.DB
+@using TerminalArchive.Domain.Models
+@model TerminalArchive.Domain.Models.User
+    @*@model TerminalArchive.WebUI.Models.UserViewModel*@
+
+@{
+    if (Model.Id != 0)
+    {
+        ViewBag.Title = "Редактирование учетной записи";
+    }
+    else
+    {
+        ViewBag.Title = "Создание учетной записи";
+    }
+}
+<div class="page-header">
+    <h3>@ViewBag.Title</h3>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+
+    <div>
+        <div class="form-group">
+            @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+            <h3>Учетные данные</h3>
+            @*@Html.HiddenFor(model => model.Id)
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @if(string.IsNullOrEmpty(Model.Password))
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }*@
+
+            @foreach (var property in ViewData.ModelMetadata.Properties)
+            {
+                if (property.PropertyName == "Id")
+                {
+                    @*@Html.Hidden(property.PropertyName)*@
+                }
+                else if (property.PropertyName == "Name")
+                {
+                    if (Model.Id != 0)
+                    {
+                        @Html.Hidden(property.PropertyName)
+                        <div class="form-group">
+                            <label>@(property.DisplayName ?? property.PropertyName)</label>
+                            <div>
+                                @Html.TextBox(property.PropertyName, null, new { disabled = "disabled", @readonly = "readonly", @class = "form-control" })
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label>@(property.DisplayName ?? property.PropertyName)</label>
+                            <div>
+                                @Html.TextBox(property.PropertyName, null, new { @class = "form-control" })
+                                @Html.ValidationMessage(property.PropertyName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+                else if (property.PropertyName == "Password")
+                {
+                    if (!string.IsNullOrEmpty(Model.Name) && !DbHelper.UserIsAdmin(User?.Identity?.Name))
+                    {
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.OldPass, htmlAttributes: new { @class = "control-label" })
+                            <div>
+                                @Html.PasswordFor(model => model.OldPass, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.OldPass, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                    }
+
+                    <div class="form-group">
+                        <label>@(property.DisplayName ?? property.PropertyName)</label>
+                        <div>
+                            @Html.Password(property.PropertyName, null, new { @class = "form-control" })
+                            @Html.ValidationMessage(property.PropertyName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+                else if (property.PropertyName == "ControlPassword")
+                {
+                    <div class="form-group">
+                        <label>@(property.DisplayName ?? property.PropertyName)</label>
+                        <div>
+                            @Html.Password(property.PropertyName, null, new { @class = "form-control" })
+                            @Html.ValidationMessage(property.PropertyName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+                @*else if (property.PropertyName == "Roles")
+                    {
+                        <div class="form-group">
+                            @if (Model.AllRoles != null && Model.AllRoles.Any())
+                            {
+                                <label>@(property.DisplayName ?? property.PropertyName)</label>
+                                <table class="table">
+                                    <tr>
+                                        <th>Роли</th>
+                                    </tr>
+                                    @foreach (var role in Model.AllRoles ?? new List<Role>())
+                                    {
+                                        <tr>
+                                            <td>
+                                                @role.Name
+                                                <input type="checkbox"
+                                                       id="chk_@Model.Id.ToString()_@role.Id.ToString()"
+                                                       name="chk_@Model.Id.ToString()_@role.Id.ToString()"
+                                                       value="@(Model.Roles != null && Model.Roles.Any(r => r.Id == role.Id) ? "true" : "false")"
+                                                       @(Model.Roles != null && Model.Roles.Any(r => r.Id == role.Id) ? "checked" : "")
+                                                       @(Model.Name ==  User?.Identity?.Name && role.Id == Constants.IdRoleAdmin ? "disabled=\"disabled\"" : "")
+                                                       />
+                                            </td>
+                                        </tr>
+                                    }
+                                </table>
+                            }
+                            else if (Model.Id != 0)
+                            {
+                                <label>@(property.DisplayName ?? property.PropertyName)</label>
+                                <div class="col-md-10">
+                                    @{
+                                        var roles = Model.Roles != null && Model.Roles.Any() ? Model.Roles.Select(r => r.Name).Aggregate((current, next) => current + ", " + next) : " - ";
+                                    }
+                                    @Html.Label(roles.ToString(), null, new {@class = "form-control"})
+                                    <label class = "form-control">@roles</label>
+                                </div>
+                            }
+                        </div>
+                    }*@
+            }
+        </div>
+    </div>
+    <div class="panel-group " id="collapse-group" style="max-width:280px">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"  style="text-align:center">
+                    <a data-toggle="collapse" data-parent="#collapse-group" href="#el3">Роли пользователя</a>
+                </h3>
+            </div>
+            <div id="el3" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    @*@foreach (var property in ViewData.ModelMetadata.Properties)
+            {
+                if (property.PropertyName == "Roles")
+                {*@
+                    @{
+                        var role_property = ViewData.ModelMetadata.Properties.Where(i => i.PropertyName == "Roles").FirstOrDefault();
+                    }
+                    <div class="form-group">
+                        @if (Model.AllRoles != null && Model.AllRoles.Any())
+                {
+                            @*<h3>@(role_property.DisplayName ?? role_property.PropertyName)</h3>*@
+                            <table class="table">
+                                @foreach (var role in Model.AllRoles ?? new List<Role>())
+                    {
+                                    <tr>
+                                        <td>@role.Name</td>
+                                        <td>
+
+                                            <input type="checkbox"
+                                                   id="chk_@Model.Id.ToString()_@role.Id.ToString()"
+                                                   name="chk_@Model.Id.ToString()_@role.Id.ToString()"
+                                                   value="@(Model.Roles != null && Model.Roles.Any(r => r.Id == role.Id) ? "true" : "false")"
+                                                   @(Model.Roles != null && Model.Roles.Any(r => r.Id == role.Id) ? "checked" : "")
+                                                   @(Model.Name == User?.Identity?.Name && role.Id == Constants.IdRoleAdmin ? "disabled=\"disabled\"" : "") />
+                 
+
+                                        </td>
+                                    </tr>
+                                }
+                            </table>
+                        }
+                        else if (Model.Id != 0)
+                        {
+                            <label>@(role_property.DisplayName ?? role_property.PropertyName)</label>
+                                <div>
+                                    @{
+                                        var roles = Model.Roles != null && Model.Roles.Any() ? Model.Roles.Select(r => r.Name).Aggregate((current, next) => current + ", " + next) : " - ";
+                                    }
+                                    @Html.Label(roles.ToString(), null, new { @class = "form-control" })
+                                    <label class="form-control">@roles</label>
+                                </div>
+                                        }
+                    </div>
+                    @*}
+            }*@
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <hr/>
+        <div class="form-group">
+            <div>
+                <input type="submit" value="Сохранить" class="btn btn-primary btn-block" />
+            </div>
+        </div>
+
+        }
+
+        @*<div>
+                @Html.ActionLink("Back to List", "Index")
+            </div>*@

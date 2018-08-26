@@ -1,0 +1,138 @@
+﻿@model TerminalArchive.WebUI.Models.TerminalParametersViewModel
+
+@{
+    ViewBag.Title = "Параметры";
+}
+
+
+
+<div>
+    <h3>Параметры терминала</h3>
+
+    @Html.Partial("TerminalInfo", Model.Terminal)
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div    >
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Параметр</th>
+                <th>Путь</th>
+                <th style="text-align:center">Значение</th>
+                @if ((bool)ViewBag.CanEdit)
+                {
+                    <th style="text-align:center">К группе</th>
+                }
+                <th style="text-align:center">Дата изменения</th>
+                <th style="text-align:center">Состояние</th>
+            </tr>
+            </thead>
+            <tbody>
+            @{ int index = 0;}
+            @foreach (var parametr in Model.Parameters)
+            {
+                <tr>
+                    <td style="vertical-align:middle">@(++index)</td>
+                    <td style="vertical-align:middle">@parametr.Description</td>
+                    <td style="vertical-align:middle">@(parametr.Path+"\\"+parametr.Name)</td>
+                    <td>
+                        @if ((bool)ViewBag.CanEdit)
+                        {
+                            <div>
+                                @Html.Editor("val_" + parametr.TId + "_" + parametr.Id + "_" + Model.Terminal.IdGroup, new { htmlAttributes = new { @Value = parametr.Value, @class = "form-control" } })
+                                @Html.ValidationMessage("val_" + parametr.TId + "_" + parametr.Id + "_" + Model.Terminal.IdGroup, "", new { @class = "text-danger" })
+                            </div>
+                        }
+                        else
+                        {
+                            @parametr.Value
+                        }
+                    </td>
+                    @if ((bool)ViewBag.CanEdit)
+                    {
+                        <td>
+                            <div  style="vertical-align:middle; text-align:center">
+                                <input type="checkbox"
+                                       id="all_in_group"
+                                       name=@("all_" + parametr.TId + "_" + parametr.Id + "_" + Model.Terminal.IdGroup) />
+                            </div>
+                        </td>
+                    }
+                    <td style="vertical-align:middle;text-align:center">@parametr.LastEditTime</td>
+                    @if (parametr.Saved)
+                    {
+                        <td style="vertical-align:middle;text-align:center"><span class="badge badge-success">Сохранен</span></td>
+                    }
+                    else
+                    {
+                        <td style="vertical-align:middle;text-align:center"><span class="badge badge-warning">Изменен</span></td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    if ((bool) ViewBag.CanEdit)
+    {
+        @*<div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="checkbox"
+                    id="all_in_group"
+                    name="all_in_group"/><span> Применить ко всем терминалам в группе</span>
+            </div>
+        </div>*@
+        <div class="form-group">
+            <div>
+                <input type="submit" value="Сохранить изменения" class="btn btn-primary"/>
+            </div>
+        </div>
+    }
+}
+    </div>
+
+
+@*<h2>Parameters</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Parameter</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Path, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Path, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Path, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Value, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}*@

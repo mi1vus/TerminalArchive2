@@ -1,0 +1,59 @@
+﻿@model IEnumerable<TerminalArchive.Domain.Models.User>
+
+@{
+    ViewBag.Title = "Пользователи";
+}
+
+<h2>Пользователи</h2>
+
+@*<p>
+    @Html.ActionLink("Создать пользователя", "AddOrEdit", new {},
+        new
+        {
+            @class = "btn "
+            + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+        })
+</p>*@
+<table class="table">
+    @*<tr>
+    <th>
+        @Html.DisplayNameFor(model => model.Name)
+    </th>
+    <th>
+        @Html.DisplayNameFor(model => model.Password)
+    </th>
+        <th>Редактировать</th>
+    </tr>*@
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        @*<td>
+            @Html.DisplayFor(modelItem => item.Password)
+        </td>*@
+        <td>
+            @Html.ActionLink("Редактировать", "AddOrEdit", new { id=item.Id },
+        new
+        {
+            @class = "btn btn-default btn-block",
+            //+ ("" == ViewBag.CurrentController ? " btn-primary btn-block" : "")
+              @style = "max-width:200px"
+        })
+        </td>
+    </tr>
+}
+    <tr>
+        <td></td>
+        <td>
+            @Html.ActionLink("Создать пользователя", "AddOrEdit", new { },
+            new
+            {
+                @class = "btn btn-primary btn-block",
+                //+ ("" == ViewBag.CurrentController ? " btn-primary btn-block" : "")
+                  @style = "max-width:200px"
+            })
+        </td>
+    </tr>
+</table>

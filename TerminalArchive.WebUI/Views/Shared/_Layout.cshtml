@@ -1,0 +1,128 @@
+﻿@using TerminalArchive.Domain.DB
+@using System.Web.Optimization
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-theme.css" rel="stylesheet" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                
+                @Html.ActionLink("Smart Pump Control TMS", "List", "TerminalMonitoring", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @Html.Action("Menu", "Nav")
+                </ul>
+                @{
+                    ViewBag.User = User?.Identity?.Name;
+                    ViewBag.IsAdmin = DbHelper.UserIsAdmin(User?.Identity?.Name);
+                }
+
+                @if (!string.IsNullOrWhiteSpace(ViewBag.User))
+                {
+                    using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                    {
+                        @Html.AntiForgeryToken()
+                      
+                        <ul class="nav navbar-nav navbar-right">
+                            @*<li>@ViewBag.User</li>*@
+                            <li>
+                                @Html.ActionLink("Сменить пароль", "ChangePassword", "Account")
+                            </li>
+                            <li>
+                                @Html.ActionLink("Выйти", "SignOut", "Account")
+                            </li>
+                        </ul>
+                    }
+                }
+                else
+                {
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>@Html.ActionLink("Выполнить вход", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+                    </ul>
+                }
+
+            </div>
+        </div>
+    </div>
+    @*<div class="navbar navbar-inverse col-md-10" role="navigation">
+            <a class="navbar-brand" href="#">Terminal archive - мониторинг бензо терминалов! </a>
+            @{
+                ViewBag.User = User?.Identity?.Name;
+                ViewBag.IsAdmin = DbHelper.UserIsAdmin(User?.Identity?.Name);
+            }
+            @using (Html.BeginForm("Logout", "Account"))
+            {
+                if (!string.IsNullOrWhiteSpace(ViewBag.User))
+                {
+                    <div class="form-group">
+                        Вы вошли как: @ViewBag.User
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            <input type="submit" value="Сменить пароль" class="btn btn-default" name="submitButton" />
+                        </div>
+                        <div class="col-md-offset-2 col-md-10">
+                            <input type="submit" value="Выйти" class="btn btn-default" name="submitButton"/>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        Для просмотра информации - авторизуйтесь!
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            @Html.RouteLink("Войти", new
+                            {
+                                controller = "Account",
+                                action = "Login"
+                            })
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="row panel col-md-10" >
+            <div id="categories" class="col-md-2">
+                @Html.Action("Menu", "Nav")
+            </div>
+            <div class="col-md-10">
+                @RenderBody()
+            </div>
+        </div>*@
+    <div class="container body-content">
+        <div>
+            <div class="panel">
+                <div class="panel-body">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p>&copy; @DateTime.Now.Year – Смарт - Технолоогии</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

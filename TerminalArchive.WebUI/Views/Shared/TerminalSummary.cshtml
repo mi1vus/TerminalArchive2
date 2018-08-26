@@ -1,0 +1,153 @@
+﻿@model TerminalArchive.WebUI.Models.ViewTerminal
+<tr>
+    <td style="vertical-align: middle">@Model.GroupsNamesString</td>
+    <td scope="row" style="vertical-align: middle">@Model.Name</td>
+    <td style="vertical-align: middle">@Model.Address</td>
+    <td style="vertical-align: middle">@Model.IdHasp</td>
+    <td style="vertical-align: middle">
+        <div class="btn-group">
+            <button type="button" data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">
+                Действия <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    @Html.ActionLink("Просмотр заказов", "Details", "Terminal", 
+                        new
+                        {
+                            id = Model.Id,
+                            page = 1
+                        }, null
+                        )
+                </li>
+                <li>
+                    @Html.ActionLink("Редактировать параметры", "Parameters", "Terminal",
+                            new
+                            {
+                                id = Model.Id,
+                                page = 1
+                            }, null
+                            )
+                </li>
+                <li>
+                    @Html.ActionLink("Редактировать учетные данные", "Edit", "Terminal",
+                            new
+                            {
+                                id = Model.Id,
+                                page = 1
+                            }, null
+                            )
+                </li>
+                <li>
+                    @Html.ActionLink("Протокол работы", "List", "History",
+                            new
+                            {
+                                id = Model.Id,
+                                page = 1
+                            }, null
+                            )
+                </li>
+            </ul>
+        </div>
+        @*<div>
+    @using (Html.BeginForm("Edit", "Terminal"))
+     {
+         <div class="pull-right">
+             @Html.HiddenFor(x => x.Id)
+             @Html.Hidden("returnUrl", Request.Url.PathAndQuery)
+             <input type="submit" class="btn btn-success" value="Подробно" />
+         </div>
+     }*@
+            @*<div class="btn-group">
+                <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle">Дополнительно<span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li>@Html.ActionLink("Заказы", "Details", "Terminal",
+                        new
+                        {
+                            id = Model.Id,
+                            page = 1
+                        }
+                        )
+                    </li>
+                    <li>
+                        @Html.ActionLink("Параметры", "Parameters", "Terminal",
+                        new
+                        {
+                            id = Model.Id,
+                            page = 1
+                        }
+                        )
+                    </li>
+                    <li>
+                        @Html.ActionLink("Данные", "Edit", "Terminal",
+                        new
+                        {
+                            id = Model.Id,
+                            page = 1
+                        }
+                        )
+                    </li>
+                    <li>
+                        @Html.ActionLink("История", "List", "Terminal",
+                        new
+                        {
+                            id = Model.Id,
+                            page = 1
+                        }
+                        )
+                    </li>
+
+                    <li class="divider"></li>
+                    <li><a href="#">Пункт 3</a></li>
+                </ul>
+            </div>*@
+            @*@Html.ActionLink("Заказы", "Details", "Terminal",
+            new
+            {
+                id = Model.Id,
+                page = 1
+            },
+            new
+            {
+                @class = "btn btn-success"
+                + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+            }
+            )
+            @Html.ActionLink("Параметры", "Parameters", "Terminal",
+            new
+            {
+                id = Model.Id
+            },
+            new
+            {
+                @class = "btn btn-success"
+                + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+            }
+            )
+
+            @Html.ActionLink("Данные", "Edit", "Terminal",
+            new
+            {
+                id = Model.Id
+            },
+            new
+            {
+                @class = "btn btn-success"
+                + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+            }
+            )
+
+            @Html.ActionLink("История", "List", "History",
+            new
+            {
+                id = Model.Id,
+                page = 1
+            },
+            new
+            {
+                @class = "btn btn-success"
+                + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+            }
+            )*@
+            @*<a href='/Pages/TerminalInfo.aspx?idT=@Model.Id'>Детально</a>*@
+</td>
+</tr>

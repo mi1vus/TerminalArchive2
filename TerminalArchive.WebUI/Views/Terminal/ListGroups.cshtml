@@ -1,0 +1,57 @@
+﻿@model IEnumerable<TerminalArchive.Domain.Models.Group>
+
+@{
+    ViewBag.Title = "Группы";
+}
+
+<div class="page-header">
+    <h3>@ViewBag.Title</h3>
+</div>
+
+@*<p>
+    @Html.ActionLink("Новая группа", "AddOrEditGroup", new {},
+        new
+        {
+            @class = "btn btn-primary"
+            + ("" == ViewBag.CurrentController ? " btn-primary" : "")
+        })
+</p>*@
+<table class="table">
+    @*<tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>Редактирование</th>
+    </tr>*@
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.ActionLink("Редактировать", "AddOrEditGroup", new { id=item.Id },
+        new
+        {
+            @class = "btn btn-default   btn-block"
+          /*  + ("" == ViewBag.CurrentController ? " btn-primary  btn-block" : "")*/,
+            @style = "max-width:200px"
+        })
+        </td>
+    </tr>
+}
+    <tr>
+        <td>
+         
+        </td>
+        <td>
+            @Html.ActionLink("Новая группа", "AddOrEditGroup", new { },
+            new
+            {
+                @class = "btn btn-primary btn-block" /*+ ("" == ViewBag.CurrentController ? " btn-primary  btn-block" : "")*/,
+                @style = "max-width:200px"
+            })
+        </td>
+    </tr>
+
+</table>

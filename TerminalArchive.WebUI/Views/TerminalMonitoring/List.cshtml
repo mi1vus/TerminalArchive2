@@ -1,0 +1,55 @@
+﻿@using TerminalArchive.WebUI.Models
+@using TerminalArchive.WebUI.HtmlHelpers
+@model TerminalsListViewModel
+
+@{
+    ViewBag.Title = "Просмотр терминалов";
+    ViewBag.User = User?.Identity?.Name;
+}
+
+<div class="page-header">
+    <h3>@ViewBag.Title</h3>
+</div>
+
+
+    @*<table>
+        <thead>
+        <tr>
+            <th>Название терминала</th>
+            <th>Номер группы</th>
+            <th>Группа</th>
+            <th>Адрес</th>
+            <th>Hasp id</th>
+            <th>Дополнительно</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var t in @Model.Terminals)
+        {
+            @Html.Partial("TerminalSummary", t)
+        }
+        </tbody>
+    </table>*@
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Группа</th>
+            <th>Название терминала</th>           
+            <th>Адрес</th>
+            <th>HASP ID</th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in @Model.Terminals)
+        {
+            @Html.Partial("TerminalSummary", t)
+        }
+    </tbody>
+</table>
+
+    <div class="btn-group pull-right">
+        @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x }))
+    </div>
+

@@ -1,0 +1,97 @@
+﻿@using TerminalArchive.Domain.DB
+@model TerminalArchive.WebUI.Models.UserRolesViewModel
+
+@{
+    ViewBag.Title = "UserRoles";
+    int col_count = 4;
+}
+
+<h2>Роли пользователей</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <hr />
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+    <div class="form-horizontal">
+
+        <table class="table">
+            <tr>
+                <th rowspan="2" style="vertical-align:middle">Польз.\Роли</th>
+                @{
+                    int last_gr_id = 0;
+                }
+                @foreach (var role in Model.Roles)
+                {
+                    if (role.IdGroup == null)
+                    {
+                        <th rowspan="2"  style="vertical-align:middle">@role.Name</th>
+                    }
+                    else
+                    {
+                        if (last_gr_id != role.IdGroup)
+                        {
+                            last_gr_id = role.IdGroup??0;
+
+                            <th rowspan="1" colspan="2" style="text-align : center">@($"{role.GroupName}")</th>
+                        }
+                    }
+                }
+            </tr>
+            <tr>
+             
+                @foreach (var role in Model.Roles)
+                {
+
+                    if (role.IdGroup != null)
+                    {
+                        col_count++;
+                        <th>@if (role.Name.StartsWith("Чит"))
+                            {
+                                <p>Чтение</p>
+                            }
+                            else
+                            {
+                                <p>Запись</p>
+                            }
+                       </th>
+                    }
+                }
+            </tr>
+            @*<tr>
+                <th>Польз.\Роли</th>
+                @foreach (var role in Model.Roles)
+                {
+                    <th>@role.Name @((role.IdGroup != null) ? $"[{role.IdGroup}]" : "")</th>
+                }
+            </tr>*@
+
+        @foreach (var user in Model.Users.Where(u => u.Roles != null))
+        {
+            <tr>
+                <th>@user.Name</th>
+                @foreach (var role in Model.Roles)
+                {
+                <td>
+                    <input type="checkbox"
+                           id="chk_@user.Id.ToString()_@role.Id.ToString()"
+                           name="chk_@user.Id.ToString()_@role.Id.ToString()"
+                           value="@(user.Roles.Any(r => r.Id == role.Id) ? "true" : "false")"
+                           @(user.Roles.Any(r => r.Id == role.Id) ? "checked" : "") 
+                           @(user.Name ==  User?.Identity?.Name && role.Id == Constants.IdRoleAdmin ? "disabled=\"disabled\"" : "")/>
+                </td>
+                }
+            </tr>
+        }
+
+            <tr>
+                <td colspan="@col_count">
+                    <input type="submit" value="Сохранить" class="btn btn-primary" name="submitButton" />
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+}

@@ -1,0 +1,23 @@
+﻿@model TerminalArchive.WebUI.Models.ViewTerminal
+<hr />
+<div>
+    <table>
+        <tr>
+            <td>
+                <b>Группа:</b>
+            </td>
+            <td>
+                @Model.GroupsNamesString
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>Терминал:</b>
+            </td>
+            <td>
+                @Model.Name (@Model.Address)
+            </td>
+        </tr>
+        </table>
+</div>
+<hr/>
