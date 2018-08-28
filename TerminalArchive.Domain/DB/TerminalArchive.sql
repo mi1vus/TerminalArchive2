@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS `terminal_archive`.`orders`;
 DROP TABLE IF EXISTS `terminal_archive`.`order_states`;
 DROP TABLE IF EXISTS `terminal_archive`.`order_payment_types`;
 DROP TABLE IF EXISTS `terminal_archive`.`order_fuels`;
+DROP TABLE IF EXISTS `terminal_archive`.`parameter_groups`;
 DROP TABLE IF EXISTS `terminal_archive`.`terminal_parameters`;
 DROP TABLE IF EXISTS `terminal_archive`.`parameters`;
 DROP TABLE IF EXISTS `terminal_archive`.`terminals`;
@@ -237,7 +238,8 @@ INSERT INTO `terminal_archive`.`role_rights` (`id`, `id_role`, `id_right`) VALUE
 INSERT INTO `terminal_archive`.`groups` (`id`,`name`) VALUES 
 ('1', 'Тестовая1'),
 ('2', 'Тестовая2'),
-('3', 'Тестовая3');
+('3', 'Тестовая3'),
+('4', 'Тестовая4');
 
 INSERT INTO `terminal_archive`.`terminals` (`id`,`id_hasp`, `id_group`, `address`, `name`) VALUES 
 ('1', '306061827', '1', 'Исследователей, 15', 'Тестовый1'),
