@@ -15,8 +15,7 @@ namespace TerminalArchive.Domain.DB
         public static string RightWriteName { get; set; } = "Write";
         public static string RightBannedName { get; set; } = "None";
     }
-
-
+    
     public static class DbHelper
     {
         // строка подключения к БД
@@ -37,6 +36,192 @@ namespace TerminalArchive.Domain.DB
                 rootWebConfig.AppSettings.Settings["connStr"];
             if (customSetting != null)
                 ConnStr = customSetting.Value;
+        }
+
+        public static bool InitAuthorizeUserTables(MySqlConnection contextConn = null)
+        {
+            int result = 0;
+            var conn = contextConn ?? new MySqlConnection(ConnStr);
+            try
+            {
+                string sql =
+$@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
+
+                if (contextConn == null)
+                    conn.Open();
+
+                var countCommand = new MySqlCommand(sql, conn);
+
+                var dataReader = countCommand.ExecuteReader();
+                while (dataReader.HasRows && dataReader.Read() && !dataReader.IsDBNull(0))
+                {
+                    result = dataReader.GetInt32(0);
+                }
+                dataReader.Close();
+
+                if (result == 0)
+                { 
+                    var addSql =
+    $@" INSERT INTO terminal_archive.roles_authorize SELECT r.id, r.id_group, r.name FROM terminal_archive.roles AS r;  ";
+
+                    var addCommand = new MySqlCommand(addSql, conn);
+                    result = addCommand.ExecuteNonQuery();
+
+                    if (result == 0)
+                        throw new Exception("Roles not added!");
+
+                    addSql =
+    $@" INSERT INTO terminal_archive.rights_authorize SELECT r.id, r.name FROM terminal_archive.rights AS r; ";
+
+                    addCommand = new MySqlCommand(addSql, conn);
+                    result = addCommand.ExecuteNonQuery();
+
+                    if (result == 0)
+                        throw new Exception("Rights not added!");
+
+                    addSql =
+    $@" INSERT INTO terminal_archive.role_authorize_rights SELECT r.id, r.id_role, r.id_right FROM terminal_archive.role_rights AS r; ";
+
+                    addCommand = new MySqlCommand(addSql, conn);
+                    result = addCommand.ExecuteNonQuery();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                result = 0;
+            }
+            finally
+            {
+                if (contextConn == null)
+                    conn.Close();
+            }
+            return result > 0;
+        }
+
+        public static bool AuthorizeUser(string name, bool isAdmin, MySqlConnection contextConn = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            int result;
+            var conn = contextConn ?? new MySqlConnection(ConnStr);
+            try
+            {
+                var sql =
+$@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}') ;  ";
+
+                if (contextConn == null)
+                    conn.Open();
+
+                var deleteCommand = new MySqlCommand(sql, conn);
+                result = deleteCommand.ExecuteNonQuery();
+
+                sql =
+$@" DELETE u FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ";
+
+                deleteCommand = new MySqlCommand(sql, conn);
+                result = deleteCommand.ExecuteNonQuery();
+
+                string isAdminStr = isAdmin ? " true " : " false ";
+                string addSql =
+$@" INSERT INTO terminal_archive.users_authorize SELECT u.id, u.name, {isAdminStr} FROM terminal_archive.users AS u WHERE u.name = '{name}'; ";
+
+                var addCommand = new MySqlCommand(addSql, conn);
+                result = addCommand.ExecuteNonQuery();
+
+                if (result == 0)
+                    throw new Exception("User not added!");
+
+                addSql =
+$@" INSERT INTO terminal_archive.users_authorize_roles SELECT * FROM terminal_archive.user_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}'); ";
+
+                addCommand = new MySqlCommand(addSql, conn);
+                result = addCommand.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                result = 0;
+            }
+            finally
+            {
+                if (contextConn == null)
+                    conn.Close();
+            }
+            return result > 0;
+        }
+
+        public static bool DeauthorizeUser(string name, MySqlConnection contextConn = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            int result;
+            var conn = contextConn ?? new MySqlConnection(ConnStr);
+            try
+            {
+                var sql =
+$@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}') ;  ";
+
+                if (contextConn == null)
+                    conn.Open();
+
+                var deleteCommand = new MySqlCommand(sql, conn);
+                result = deleteCommand.ExecuteNonQuery();
+
+                sql =
+$@" DELETE u FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ";
+
+                deleteCommand = new MySqlCommand(sql, conn);
+                result = deleteCommand.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                result = 0;
+            }
+            finally
+            {
+                if (contextConn == null)
+                    conn.Close();
+            }
+            return result > 0;
+        }
+
+        public static bool UserInCache(string name, MySqlConnection contextConn = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            int result = 0;
+            var conn = contextConn ?? new MySqlConnection(ConnStr);
+            try
+            {
+                string sql =
+$@" SELECT COUNT(u.id) FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ;  ";
+
+                if (contextConn == null)
+                    conn.Open();
+
+                var countCommand = new MySqlCommand(sql, conn);
+
+                var dataReader = countCommand.ExecuteReader();
+                while (dataReader.HasRows && dataReader.Read() && !dataReader.IsDBNull(0))
+                {
+                    result = dataReader.GetInt32(0);
+                }
+                dataReader.Close();
+            }
+            catch (Exception ex)
+            {
+                result = 0;
+            }
+            finally
+            {
+                if (contextConn == null)
+                    conn.Close();
+            }
+
+            return result > 0;
         }
 
         /// <summary>
@@ -145,7 +330,7 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
         /// <param name="group"></param>
         /// <param name="contextConn"></param>
         /// <returns></returns>
-        public static bool UserInRole(string name, string role, int? group, MySqlConnection contextConn = null)
+        public static bool UserInRoleDB(string name, string role, int? group, MySqlConnection contextConn = null)
         {
             var users = 0;
             if (name != null && role != null)
@@ -183,7 +368,54 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
             return users > 0;
         }
 
-        public static bool UserIsAdmin(string name, MySqlConnection contextConn = null)
+        public static bool UserInRole(string name, string role, int? group, MySqlConnection contextConn = null)
+        {
+            var users = 0;
+            if (name != null && role != null)
+            {
+                string groupToQuery = (group == null ? " IS null " : $" = '{group}' ");
+                string sql =
+                    $@" SELECT COUNT(u.id) FROM terminal_archive.users_authorize AS u 
+ LEFT JOIN terminal_archive.users_authorize_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN terminal_archive.roles_authorize AS rl ON ur.id_role = rl.id
+ LEFT JOIN terminal_archive.role_authorize_rights AS rr ON rr.id_role = rl.id
+ LEFT JOIN terminal_archive.rights_authorize AS rg ON rr.id_right = rg.id
+ WHERE u.name = '{name}' AND rg.name = '{role}' AND rl.id_group {groupToQuery} AND rg.name <> 'None' ; ";
+                var conn = contextConn ?? new MySqlConnection(ConnStr);
+
+                if (contextConn == null)
+                    conn.Open();
+
+                if (!UserInCache(name, conn))
+                {
+                    InitAuthorizeUserTables(conn);
+                    bool admin = UserIsAdminDB(name, conn);
+                    AuthorizeUser(name, admin, conn);
+                }
+
+                var countCommand = new MySqlCommand(sql, conn);
+                try
+                {
+                    var dataReader = countCommand.ExecuteReader();
+                    while (dataReader.HasRows && dataReader.Read())
+                    {
+                        users = dataReader.GetInt32(0);
+                    }
+                    dataReader.Close();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    if (contextConn == null)
+                        conn.Close();
+                }
+            }
+            return users > 0;
+        }
+
+        public static bool UserIsAdminDB(string name, MySqlConnection contextConn = null)
         {
             bool result = false;
             if (string.IsNullOrEmpty(name))
@@ -196,12 +428,58 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
                 conn.Open();
             try
             {
-                if (UserInRole(name, Constants.RightWriteName, null, contextConn) && UserInRole(name, Constants.RightReadName, null, conn)
+                if (UserInRoleDB(name, Constants.RightWriteName, null, contextConn) && UserInRoleDB(name, Constants.RightReadName, null, conn)
                     /*|| (groups != null && groups.Any())*/)
                     result = true;
             }
             catch (Exception ex)
             {
+            }
+            finally
+            {
+                if (contextConn == null)
+                    conn.Close();
+            }
+            return result;
+        }
+
+        public static bool UserIsAdmin(string name, MySqlConnection contextConn = null)
+        {
+            bool result = false;
+            if (string.IsNullOrEmpty(name))
+                return result;
+
+            //var groups = GetUserGroups(name, Constants.RightReadName, contextConn);
+            //groups.AddRange(GetUserGroups(name, Constants.RightWriteName, contextConn));
+            var conn = contextConn ?? new MySqlConnection(ConnStr);
+
+            try
+            {
+                string sql =
+$@" SELECT u.isAdmin FROM terminal_archive.users_authorize AS u;  ";
+
+                if (contextConn == null)
+                    conn.Open();
+
+                if (!UserInCache(name, conn))
+                {
+                    InitAuthorizeUserTables(conn);
+                    bool admin = UserIsAdminDB(name, conn);
+                    AuthorizeUser(name, admin, conn);
+                }
+
+                var countCommand = new MySqlCommand(sql, conn);
+
+                var dataReader = countCommand.ExecuteReader();
+                while (dataReader.HasRows && dataReader.Read() && !dataReader.IsDBNull(0))
+                {
+                    result = dataReader.GetBoolean(0);
+                }
+                dataReader.Close();
+            }
+            catch (Exception ex)
+            {
+                result = false;
             }
             finally
             {

@@ -15,12 +15,14 @@ namespace TerminalArchive.WebUI.Controllers
         [HttpPost]
         public ActionResult Login(LoginViewModel model, string returnUrl)
         {
-
             if (ModelState.IsValid)
             {
                 var authorize = DbHelper.IsAuthorizeUser(model.UserName, model.Password);
                 if (authorize != null && authorize.Value)
                 {
+                    bool admin = DbHelper.UserIsAdminDB(model.UserName);
+                    DbHelper.InitAuthorizeUserTables();
+                    DbHelper.AuthorizeUser(model.UserName, admin);
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
                     return Redirect(returnUrl ?? Url.Action("List", "TerminalMonitoring"));
                 }
@@ -47,6 +49,8 @@ namespace TerminalArchive.WebUI.Controllers
         {
             if (Request.Form["submitbutton"] != null && Request.Form["submitbutton"] == "Выйти")
             {
+                DbHelper.InitAuthorizeUserTables();
+                DbHelper.DeauthorizeUser(User?.Identity?.Name);
                 FormsAuthentication.SignOut();
             }
             else
@@ -60,6 +64,7 @@ namespace TerminalArchive.WebUI.Controllers
             var url = Request["ReturnUrl"];
             return Redirect(url ?? Url.Action("List", "TerminalMonitoring"));
         }
+
         [Authorize]
         public ActionResult ChangePassword()
         {
@@ -70,6 +75,8 @@ namespace TerminalArchive.WebUI.Controllers
         [Authorize]
         public ActionResult SignOut()
         {
+            DbHelper.InitAuthorizeUserTables();
+            DbHelper.DeauthorizeUser(User?.Identity?.Name);
             FormsAuthentication.SignOut();
             return Redirect(Request["ReturnUrl"] ?? Url.Action("List", "TerminalMonitoring"));
         }

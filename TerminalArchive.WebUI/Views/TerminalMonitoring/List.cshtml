@@ -1,5 +1,6 @@
 ﻿@using TerminalArchive.WebUI.Models
 @using TerminalArchive.WebUI.HtmlHelpers
+@using TerminalArchive.Domain.Models
 @model TerminalsListViewModel
 
 @{
@@ -33,6 +34,19 @@
 
 <table class="table table-striped">
     <thead>
+        @using (Html.BeginForm("List", "TerminalMonitoring", FormMethod.Get))
+        {
+            <tr>
+                <th>
+                    @Html.Hidden("page", @Model.PagingInfo.CurrentPage)
+                    @Html.DropDownList("FilterTerminalGroup", new SelectList((IEnumerable<Group>)ViewBag.Groups, "Id", "Name", "None"), new { @class = "form-control" })
+                </th>
+                <th>@Html.TextBox("FilterTerminalName", null, new { @class = "form-control" })</th>
+                <th> </th>
+                <th> </th>
+                <th> <input type="submit" value="Выбрать" class="btn btn-block btn-primary" style="text-align:center" /> </th>
+            </tr>
+        }
         <tr>
             <th>Группа</th>
             <th>Название терминала</th>           
