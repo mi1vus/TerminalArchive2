@@ -35,13 +35,107 @@
 <table class="table table-striped">
     <thead>
         @using (Html.BeginForm("List", "TerminalMonitoring", FormMethod.Get))
-        {
+            {
+            <script type="text/javascript">
+                @*(function ($) {*@
+
+                    $(document).ready(
+                                function () {
+                                    $('#FilterTerminalName').autocomplete({
+                                        source: function(request, response) {
+                                            $.ajax({
+                                                type: "POST",
+                                                contentType: "application/json; charset=utf-8",
+                                                url: "http://localhost:50193/TerminalMonitoring/GetListForAutoComplite",
+                                                data: "{ 'prefixText': '" + request.term + "', 'maxRows': '15' }",
+                                                dataType: "json",
+                                                async: false,
+                                                success: function(data) {
+                                                    //var persons = Sys.Serialization.JavaScriptSerializer.deserialize(data.d);
+                                                    console.log(data);
+                                                    response($.map(data, function (item) {
+                                                        return {
+                                                            label: item,
+                                                            value: item
+                                                        }
+                                                    }));
+                                                    //response(data);
+                                                    //console.log($.parseJSON(data));
+                                                    
+                                                    //var persons = jQuery.parseJSON(data.d);
+                                                    //var response_data = new Array();
+
+                                                    //var person_index = 0;
+                                                    //var rest_person_count = persons.length;
+
+                                                    //while (rest_person_count--)
+                                                    //{
+
+                                                    //    var person = persons[person_index];
+
+                                                    //    var found_name_part = person.UserName;
+
+
+                                                    //    if (-1 != person.Name.indexOf(request.term))
+                                                    //    {
+                                                    //        found_name_part = person.Name;
+                                                    //    }
+                                                    //    else if (0 == person.FirstName.indexOf(request.term))
+                                                    //    {
+                                                    //        found_name_part = person.FirstName + ' (' + person.UserName + ')';
+                                                    //    }
+                                                    //    else if (0 == person.UserName.indexOf(request.term))
+                                                    //    {
+                                                    //        found_name_part = person.UserName;
+                                                    //    }
+                                                    //    else if (0 == person.LastName.indexOf(request.term))
+                                                    //    {
+                                                    //        found_name_part = person.LastName + ' (' + person.UserName + ')';
+                                                    //    }
+                                                    //    else if (0 == person.MiddleName.indexOf(request.term))
+                                                    //    {
+                                                    //        found_name_part = person.MiddleName + ' (' + person.UserName + ')';
+                                                    //    }
+                                                    //    var found_person = new Object({
+                                                    //        PersonId: person.Id,
+                                                    //        label: found_name_part,
+                                                    //        value: found_name_part
+
+
+                                                    //    });
+                                                    //    response_data.push(found_person);
+                                                    //    person_index++;
+                                                    //}
+                                                    //response(response_data);
+                                                },
+                                                error: function(jqXHR, textStatus, errorThrown) {
+                                                    alert(textStatus + ': ' + errorThrown);
+                                                }
+                                            });
+                                        },
+                                        minLength: 2,
+                                        select: function(event, ui) {
+                                            $(this).prev().val(ui.item.PersonId);
+                                        }
+                                    });
+                                })
+    @*}(jQuery))*@
+</script>
             <tr>
                 <th>
                     @Html.Hidden("page", @Model.PagingInfo.CurrentPage)
-                    @Html.DropDownList("FilterTerminalGroup", new SelectList((IEnumerable<Group>)ViewBag.Groups, "Id", "Name", "None"), new { @class = "form-control" })
+                    @Html.DropDownList("FilterTerminalGroup", new SelectList((IEnumerable<Group>)ViewBag.Groups, "Id", "Name", "None"), new { @class = "form-control-ui-autocomplete-input" })
                 </th>
-                <th>@Html.TextBox("FilterTerminalName", null, new { @class = "form-control" })</th>
+                <th>
+                    @*<asp:ToolkitScriptManager ID="ToolkitScriptManager1" runat="server">
+                    </asp:ToolkitScriptManager>
+
+                    <asp:TextBox ID="txtMovie" runat="server"></asp:TextBox>
+
+                    <asp:AutoCompleteExtender ID="AutoCompleteExtender1" TargetControlID="txtMovie"
+                                              runat="server" />*@
+                @*<input id="FilterTerminalName" class="ui-autocomplete-input" autocomplete="off" role="textbox" aria-autocomplete="list" aria-haspopup="true">*@
+                @Html.TextBox("FilterTerminalName", null, new { @class = "form-control-ui-autocomplete-input", @id = "FilterTerminalName", @autocomplete = "off", @role = "textbox", @aria_autocomplete = "list", @aria_haspopup = "true" })</th>
                 <th> </th>
                 <th> </th>
                 <th> <input type="submit" value="Выбрать" class="btn btn-block btn-primary" style="text-align:center" /> </th>
@@ -49,7 +143,7 @@
         }
         <tr>
             <th>Группа</th>
-            <th>Название терминала</th>           
+            <th>Название терминала</th>
             <th>Адрес</th>
             <th>HASP ID</th>
             <th> </th>

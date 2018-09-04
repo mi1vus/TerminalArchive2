@@ -8,10 +8,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="~/Content/bootstrap.css" rel="stylesheet" />
     <link href="~/Content/site.css" rel="stylesheet" />
+    <link href="~/Content/themes/base/jquery-ui.css" rel="stylesheet" />
     @*<link href="~/Content/bootstrap-theme.css" rel="stylesheet" />*@
     <title>@ViewBag.Title</title>
     @*@Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")*@
+
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/respond.js"></script>
+    <script src="~/Scripts/modernizr-2.6.2.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+    
+
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -157,11 +167,7 @@
     @*@Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)*@
-    <script src="~/Scripts/jquery-1.10.2.js"></script>
-    <script src="~/Scripts/jquery.validate.js"></script>
-    <script src="~/Scripts/bootstrap.js"></script>
-    <script src="~/Scripts/respond.js"></script>
-    <script src="~/Scripts/modernizr-2.6.2.js"></script>
+
 
     @*@Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
