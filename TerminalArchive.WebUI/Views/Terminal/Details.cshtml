@@ -52,6 +52,7 @@
                     <th>Цена</th>
                     <th>Предзаказ</th>
                     <th>Факт</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -71,7 +72,26 @@
                         <td>@order.Price р</td>
                         <td>@order.PreQuantity л (@order.PreSumm р)</td>
                         <td>@order.Quantity л(@order.Summ р)</td>
-                    </tr>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">
+                                    Действия <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        @Html.ActionLink("История", "List", "History",
+                        new
+                        {
+                            id = Model.Terminal.Id,
+                            rrn = order.Rnn,
+                            page = 1
+                        }, null
+                        )
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+</tr>
                 }
             </tbody>
         </table>

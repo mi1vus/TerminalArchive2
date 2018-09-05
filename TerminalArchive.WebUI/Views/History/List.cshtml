@@ -32,13 +32,47 @@
                         <td>@order.State</td>
                         <td>@order.Trace</td>
                         <td>@order.Message</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(order.Order) && string.IsNullOrWhiteSpace(Request.Params["rrn"])) {
+                            <div class="btn-group">
+    <button type="button" data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">
+        Действия <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            @Html.ActionLink("По этому заказу", "List", "History",
+                        new
+                        {
+                            id = Model.Terminal.Id,
+                            rrn = order.Order,
+                            page = 1
+                        }, null
+                        )
+        </li>
+    </ul>
+
+</div> 
+                            }
+</td>
                     </tr>
                     }
                 </tbody>
             </table>
+            @if (!string.IsNullOrWhiteSpace( Request.Params["rrn"]))
+            {
+                <div class="btn-group pull-right">
+                    @Html.ActionLink("Вся история", "List", "History",
+                        new
+                        {
+                            page = 1
+                        }, new { @class = "btn btn-block btn-primary"}
+                        )
+                </div>
+            }
+
         </div>
         <div class="btn-group pull-right">
-            @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x }))
+            @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x, rrn = Request.Params["rrn"] }))
         </div>
     </div>
 

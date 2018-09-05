@@ -1358,7 +1358,7 @@ $@" WHERE t.id_group in ( {groupStr} ); ";
             return result;
         }
 
-        public static int OrdersCount(string userName, int idTerminal)
+        public static int OrdersCount(string userName, int idTerminal, string rrn = "")
         {
             var result = 0;
             var conn = new MySqlConnection(ConnStr);
@@ -1705,7 +1705,7 @@ $@" ORDER BY p.id desc;";
             return parameters;
         }
 
-        public static int HistoryCount(string userName, int idTerminal)
+        public static int HistoryCount(string userName, int idTerminal, string rrn)
         {
             var result = 0;
             var conn = new MySqlConnection(ConnStr);
@@ -1715,10 +1715,11 @@ $@" ORDER BY p.id desc;";
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
 
                 var sql =
-@" SELECT COUNT(h.id)  FROM `terminal_archive`.`history` AS h ";
+@" SELECT COUNT(h.id)  FROM `terminal_archive`.`history` AS h 
+ LEFT JOIN terminal_archive.orders AS o ON h.id_order = o.id ";
                 if (groups != null && groups.Any())
                     sql +=
-@" LEFT JOIN terminal_archive.terminals AS t ON t.id = h.id_terminal ";
+@" LEFT JOIN terminal_archive.terminals AS t ON t.id = h.id_terminal";
                 sql +=
 $@" WHERE h.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1730,6 +1731,13 @@ $@" WHERE h.id_terminal = {idTerminal} ";
                 }
                 else if (groups == null)
                     throw new Exception("Попытка доступа забаненного пользователя!");
+
+                if (!string.IsNullOrWhiteSpace(rrn))
+                {
+                    sql +=
+$@" AND o.`RNN` = '{rrn}'";
+                }
+
 
                 sql += ";";
 
@@ -1754,7 +1762,7 @@ $@" WHERE h.id_terminal = {idTerminal} ";
         }
 
         public static List<History> GetHistory(
-            string userName, int idTerminal, int currentPageHistory, int pageSize
+            string userName, int idTerminal, string rrn, int currentPageHistory, int pageSize
         )
         {
             var history = new List<History>();
@@ -1782,7 +1790,11 @@ $@" AND t.id_group in ( {groupStr} ) ";
                 }
                 else if (groups == null)
                     throw new Exception("Попытка доступа забаненного пользователя!");
-
+                if (!string.IsNullOrWhiteSpace(rrn))
+                {
+                    sql +=
+$@" AND o.`RNN` = '{rrn}'";
+                }
                 sql +=
 $@" ORDER BY h.id desc LIMIT {(currentPageHistory - 1) * pageSize},{pageSize};";
 

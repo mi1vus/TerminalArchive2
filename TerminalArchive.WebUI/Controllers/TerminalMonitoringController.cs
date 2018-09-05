@@ -12,7 +12,7 @@ namespace TerminalArchive.WebUI.Controllers
     public class TerminalMonitoringController : Controller
     {
         private readonly ITerminalRepository _repository;
-        public int PageSize = 10;
+        public int PageSize = 2;
         public static List<string> TerminalNames = new List<string>();
 
         public TerminalMonitoringController()
@@ -47,9 +47,6 @@ namespace TerminalArchive.WebUI.Controllers
                 }
             };
 
-            //if (!DbHelper.UserInRole(_repository.UserName, Constants.RightReadName, null))
-            //    return View(terminalsModel);
-
             int maxPages;
             var terminals = _repository.Terminals as IList<Terminal> ?? _repository.Terminals.ToList();
             TerminalNames = terminals.Select(t => t.Name).ToList();
@@ -61,8 +58,6 @@ namespace TerminalArchive.WebUI.Controllers
             Func<Terminal, bool> PredicatName = t => true;
             if (!string.IsNullOrWhiteSpace(FilterTerminalName))
                 PredicatName = t => t.Name == FilterTerminalName;
-
-
 
             var totalItems = terminals.Count(t => PredicatGroup(t) && PredicatName(t));
             if (totalItems <= 0)
@@ -87,32 +82,11 @@ namespace TerminalArchive.WebUI.Controllers
             ViewBag.CurrentController = GetType().ToString();
             return View(terminalsModel);
         }
-        //[System.Web.Services.WebMethodAttribute(), System.Web.Script.Services.ScriptMethodAttribute()]
-        //public static string[] GetCompletionList(string prefixText, int count, string contextKey)
-        //{
-        //    // Create array of movies  
-        //    string[] movies = { "Star Wars", "Star Trek", "Superman", "Memento", "Shrek", "Shrek II" };
 
-        //    // Return matching movies  
-        //    return (from m in movies where m.StartsWith(prefixText, StringComparison.CurrentCultureIgnoreCase) select m).Take(count).ToArray();
-        //}
-
-
+        [Authorize]
         public JsonResult GetListForAutoComplite(string prefixText, int maxRows)
         {
-            // Create array of movies  
-            //string[] movies = { "Star Wars", "Star Trek", "Superman", "Memento", "Shrek", "Shrek II" };
-
-            // Return matching movies  
             return Json(from m in TerminalNames where m.StartsWith(prefixText, StringComparison.CurrentCultureIgnoreCase) select m);
-
-
-            //var company = Json(from t in context.Company
-            //                   where t.Name.ToUpper().Contains(q.ToUpper())
-            //                   select new { t.CompanyID, t.Name });
-
-
-            //return company;
         }
     }
 }

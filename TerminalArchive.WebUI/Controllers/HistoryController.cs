@@ -10,7 +10,7 @@ namespace TerminalArchive.WebUI.Controllers
     public class HistoryController : Controller
     {
         private readonly ITerminalRepository _repository;
-        public int PageSize = 10;
+        public int PageSize = 2;
 
         public HistoryController()
         {
@@ -27,7 +27,7 @@ namespace TerminalArchive.WebUI.Controllers
         }
 
         [Authorize]
-        public ViewResult List(int id, int page = 1)
+        public ViewResult List(int id, int page = 1, string rrn = "")
         {
             _repository.UserName = User?.Identity?.Name;
 
@@ -36,9 +36,14 @@ namespace TerminalArchive.WebUI.Controllers
             if (groups == null || terminal == null || (groups.Any() && groups.All(g => g.Id != terminal.IdGroup)))
                 return View("Unauthorize");
 
-            var history = DbHelper.GetHistory(_repository.UserName, id, page, PageSize);
+            if (!string.IsNullOrWhiteSpace(rrn))
+            {
+                var newTerminals = terminal.Orders.Where(o => o.Value.Rnn == rrn);
+                terminal.Orders = terminal.Orders.Where(o => o.Value.Rnn == rrn).Select(o => o.Value).ToDictionary(o => o.Id);
+            }
+            var history = DbHelper.GetHistory(_repository.UserName, id, rrn, page, PageSize);
             var maxPages = 0;
-            int totalItems = DbHelper.HistoryCount(_repository.UserName, id);
+            int totalItems = DbHelper.HistoryCount(_repository.UserName, id, rrn);
             if (totalItems <= 0)
                 maxPages = 1;
             else

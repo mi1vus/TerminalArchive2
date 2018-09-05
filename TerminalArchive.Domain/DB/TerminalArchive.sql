@@ -103,12 +103,12 @@ CREATE TABLE IF NOT EXISTS `terminal_archive`.`orders` (
   `id_pump` INT NOT NULL,
   `id_payment` INT NOT NULL,
   `id_state` INT NOT NULL,
-  `pre_price` DECIMAL(5,2) UNSIGNED NOT NULL,
-  `price` DECIMAL(5,2) UNSIGNED NOT NULL,
-  `pre_quantity` DECIMAL(5,2) UNSIGNED NOT NULL,
-  `quantity` DECIMAL(5,2) UNSIGNED NOT NULL,
-  `pre_summ` DECIMAL(5,2) UNSIGNED NOT NULL,
-  `summ` DECIMAL(5,2) UNSIGNED NOT NULL,
+  `pre_price` DECIMAL(15,2) UNSIGNED NOT NULL,
+  `price` DECIMAL(15,2) UNSIGNED NOT NULL,
+  `pre_quantity` DECIMAL(15,2) UNSIGNED NOT NULL,
+  `quantity` DECIMAL(15,2) UNSIGNED NOT NULL,
+  `pre_summ` DECIMAL(15,2) UNSIGNED NOT NULL,
+  `summ` DECIMAL(15,2) UNSIGNED NOT NULL,
   `delete` BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `terminal_RNN_UNIQUE` (`id_terminal` ASC,`RNN` ASC),
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS `terminal_archive`.`user_roles` (
 CREATE TABLE IF NOT EXISTS `terminal_archive`.`users_authorize` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(150) NOT NULL,
-  `is_admin` BOOLEAN NOT NULL,
+  `isAdmin` BOOLEAN NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `users_authorize_name_UNIQUE` (`name`  ASC)
 )
@@ -326,7 +326,9 @@ INSERT INTO `terminal_archive`.`order_fuels` (`id`,`name`) VALUES
 ('3', '98'),
 ('4', '80'),
 ('5', '-'),
-('6', '92');
+('6', '92'),
+('7', 'ДТ Евро'),
+('8', 'ДТ');
 
 INSERT INTO `terminal_archive`.`order_payment_types` (`id`,`name`) VALUES 
 ('1', 'наличные'), 

@@ -12,7 +12,7 @@ namespace TerminalArchive.WebUI.Controllers
     public class TerminalController : Controller
     {
         private readonly ITerminalRepository _repository;
-        public int PageSize = 10;
+        public int PageSize = 2;
 
         public TerminalController()
         {

@@ -36,6 +36,7 @@
     <thead>
         @using (Html.BeginForm("List", "TerminalMonitoring", FormMethod.Get))
             {
+
             <script type="text/javascript">
                 @*(function ($) {*@
 
@@ -158,6 +159,6 @@
 </table>
 
     <div class="btn-group pull-right">
-        @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x }))
+        @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { page = x, FilterTerminalGroup = Request.Params["FilterTerminalGroup"], FilterTerminalName = Request.Params["FilterTerminalName"] }))
     </div>
 
