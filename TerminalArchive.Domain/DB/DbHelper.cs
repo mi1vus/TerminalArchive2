@@ -20,6 +20,7 @@ namespace TerminalArchive.Domain.DB
     {
         // строка подключения к БД
         private static readonly string ConnStr /*= "server=localhost;user=MYSQL;database=terminal_archive;password=tt2QeYy2pcjNyBm6AENp;"*/;
+        private static readonly string DB /*= "terminal_archive"*/;
         //private static string _connStrTest = "server=localhost;user=MYSQL;database=products;password=tt2QeYy2pcjNyBm6AENp;";
 
         //public static Dictionary<int, Terminal> Terminals = new Dictionary<int, Terminal>();
@@ -32,10 +33,14 @@ namespace TerminalArchive.Domain.DB
             var rootWebConfig =
             System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("/MyWebSiteRoot");
             if (rootWebConfig.AppSettings.Settings.Count <= 0) return;
-            var customSetting =
+            var connectionSetting =
                 rootWebConfig.AppSettings.Settings["connStr"];
-            if (customSetting != null)
-                ConnStr = customSetting.Value;
+            if (connectionSetting != null)
+                ConnStr = connectionSetting.Value;
+            var DBSetting =
+                rootWebConfig.AppSettings.Settings["DB"];
+            if (DBSetting != null)
+                DB = DBSetting.Value;
         }
 
         public static bool InitAuthorizeUserTables(MySqlConnection contextConn = null)
@@ -45,7 +50,7 @@ namespace TerminalArchive.Domain.DB
             try
             {
                 string sql =
-$@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
+$@" SELECT COUNT(r.id) FROM {DB}.roles_authorize AS r;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -62,7 +67,7 @@ $@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
                 if (result == 0)
                 { 
                     var addSql =
-    $@" INSERT INTO terminal_archive.roles_authorize SELECT r.id, r.id_group, r.name FROM terminal_archive.roles AS r;  ";
+$@" INSERT INTO {DB}.roles_authorize SELECT r.id, r.id_group, r.name FROM {DB}.roles AS r;  ";
 
                     var addCommand = new MySqlCommand(addSql, conn);
                     result = addCommand.ExecuteNonQuery();
@@ -71,7 +76,7 @@ $@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
                         throw new Exception("Roles not added!");
 
                     addSql =
-    $@" INSERT INTO terminal_archive.rights_authorize SELECT r.id, r.name FROM terminal_archive.rights AS r; ";
+$@" INSERT INTO {DB}.rights_authorize SELECT r.id, r.name FROM {DB}.rights AS r; ";
 
                     addCommand = new MySqlCommand(addSql, conn);
                     result = addCommand.ExecuteNonQuery();
@@ -80,7 +85,7 @@ $@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
                         throw new Exception("Rights not added!");
 
                     addSql =
-    $@" INSERT INTO terminal_archive.role_authorize_rights SELECT r.id, r.id_role, r.id_right FROM terminal_archive.role_rights AS r; ";
+$@" INSERT INTO {DB}.role_authorize_rights SELECT r.id, r.id_role, r.id_right FROM {DB}.role_rights AS r; ";
 
                     addCommand = new MySqlCommand(addSql, conn);
                     result = addCommand.ExecuteNonQuery();
@@ -109,7 +114,7 @@ $@" SELECT COUNT(r.id) FROM terminal_archive.roles_authorize AS r;  ";
             try
             {
                 var sql =
-$@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}') ;  ";
+$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}') ;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -118,14 +123,14 @@ $@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = 
                 result = deleteCommand.ExecuteNonQuery();
 
                 sql =
-$@" DELETE u FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ";
+$@" DELETE u FROM {DB}.users_authorize AS u WHERE u.name = '{name}';  ";
 
                 deleteCommand = new MySqlCommand(sql, conn);
                 result = deleteCommand.ExecuteNonQuery();
 
                 string isAdminStr = isAdmin ? " true " : " false ";
                 string addSql =
-$@" INSERT INTO terminal_archive.users_authorize SELECT u.id, u.name, {isAdminStr} FROM terminal_archive.users AS u WHERE u.name = '{name}'; ";
+$@" INSERT INTO {DB}.users_authorize SELECT u.id, u.name, {isAdminStr} FROM {DB}.users AS u WHERE u.name = '{name}'; ";
 
                 var addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -134,7 +139,7 @@ $@" INSERT INTO terminal_archive.users_authorize SELECT u.id, u.name, {isAdminSt
                     throw new Exception("User not added!");
 
                 addSql =
-$@" INSERT INTO terminal_archive.users_authorize_roles SELECT * FROM terminal_archive.user_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}'); ";
+$@" INSERT INTO {DB}.users_authorize_roles SELECT * FROM {DB}.user_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}'); ";
 
                 addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -161,7 +166,7 @@ $@" INSERT INTO terminal_archive.users_authorize_roles SELECT * FROM terminal_ar
             try
             {
                 var sql =
-$@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM terminal_archive.users AS u WHERE u.name = '{name}') ;  ";
+$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}') ;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -170,7 +175,7 @@ $@" DELETE r FROM terminal_archive.users_authorize_roles AS r WHERE r.id_user = 
                 result = deleteCommand.ExecuteNonQuery();
 
                 sql =
-$@" DELETE u FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ";
+$@" DELETE u FROM {DB}.users_authorize AS u WHERE u.name = '{name}';  ";
 
                 deleteCommand = new MySqlCommand(sql, conn);
                 result = deleteCommand.ExecuteNonQuery();
@@ -197,7 +202,7 @@ $@" DELETE u FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';
             try
             {
                 string sql =
-$@" SELECT COUNT(u.id) FROM terminal_archive.users_authorize AS u WHERE u.name = '{name}';  ;  ";
+$@" SELECT COUNT(u.id) FROM {DB}.users_authorize AS u WHERE u.name = '{name}';  ;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -252,11 +257,11 @@ $@" SELECT COUNT(u.id) FROM terminal_archive.users_authorize AS u WHERE u.name =
                     var hash = sBuilder.ToString();
 
                     sql =
-$@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
- LEFT JOIN terminal_archive.user_roles AS ur ON u.id = ur.id_user 
- LEFT JOIN terminal_archive.roles AS rl ON ur.id_role = rl.id
- LEFT JOIN terminal_archive.role_rights AS rr ON rr.id_role = rl.id
- LEFT JOIN terminal_archive.rights AS rg ON rr.id_right = rg.id
+$@" SELECT MIN(rg.name not like 'None') FROM {DB}.users AS u
+ LEFT JOIN {DB}.user_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN {DB}.roles AS rl ON ur.id_role = rl.id
+ LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = rl.id
+ LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
  WHERE u.name = '{name}' AND u.pass = '{hash}' ; ";
                 }
                 if (contextConn == null)
@@ -293,11 +298,11 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
                 string sql;
 
                 sql =
-$@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
- LEFT JOIN terminal_archive.user_roles AS ur ON u.id = ur.id_user 
- LEFT JOIN terminal_archive.roles AS rl ON ur.id_role = rl.id
- LEFT JOIN terminal_archive.role_rights AS rr ON rr.id_role = rl.id
- LEFT JOIN terminal_archive.rights AS rg ON rr.id_right = rg.id
+$@" SELECT MIN(rg.name not like 'None') FROM {DB}.users AS u
+ LEFT JOIN {DB}.user_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN {DB}.roles AS rl ON ur.id_role = rl.id
+ LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = rl.id
+ LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
  WHERE u.name = '{name}' ; ";
 
                 if (contextConn == null)
@@ -337,11 +342,11 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
             {
                 string groupToQuery = (group == null ? " IS null " : $" = '{group}' ");
                 string sql =
-                    $@" SELECT COUNT(u.id) FROM terminal_archive.users AS u 
- LEFT JOIN terminal_archive.user_roles AS ur ON u.id = ur.id_user 
- LEFT JOIN terminal_archive.roles AS rl ON ur.id_role = rl.id
- LEFT JOIN terminal_archive.role_rights AS rr ON rr.id_role = rl.id
- LEFT JOIN terminal_archive.rights AS rg ON rr.id_right = rg.id
+$@" SELECT COUNT(u.id) FROM {DB}.users AS u 
+ LEFT JOIN {DB}.user_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN {DB}.roles AS rl ON ur.id_role = rl.id
+ LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = rl.id
+ LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
  WHERE u.name = '{name}' AND rg.name = '{role}' AND rl.id_group {groupToQuery} AND rg.name <> 'None' ; ";
                 var conn = contextConn ?? new MySqlConnection(ConnStr);
                 if (contextConn == null)
@@ -375,11 +380,11 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
             {
                 string groupToQuery = (group == null ? " IS null " : $" = '{group}' ");
                 string sql =
-                    $@" SELECT COUNT(u.id) FROM terminal_archive.users_authorize AS u 
- LEFT JOIN terminal_archive.users_authorize_roles AS ur ON u.id = ur.id_user 
- LEFT JOIN terminal_archive.roles_authorize AS rl ON ur.id_role = rl.id
- LEFT JOIN terminal_archive.role_authorize_rights AS rr ON rr.id_role = rl.id
- LEFT JOIN terminal_archive.rights_authorize AS rg ON rr.id_right = rg.id
+$@" SELECT COUNT(u.id) FROM {DB}.users_authorize AS u 
+ LEFT JOIN {DB}.users_authorize_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN {DB}.roles_authorize AS rl ON ur.id_role = rl.id
+ LEFT JOIN {DB}.role_authorize_rights AS rr ON rr.id_role = rl.id
+ LEFT JOIN {DB}.rights_authorize AS rg ON rr.id_right = rg.id
  WHERE u.name = '{name}' AND rg.name = '{role}' AND rl.id_group {groupToQuery} AND rg.name <> 'None' ; ";
                 var conn = contextConn ?? new MySqlConnection(ConnStr);
 
@@ -456,7 +461,7 @@ $@" SELECT MIN(rg.name not like 'None') FROM terminal_archive.users AS u
             try
             {
                 string sql =
-$@" SELECT u.isAdmin FROM terminal_archive.users_authorize AS u;  ";
+$@" SELECT u.isAdmin FROM {DB}.users_authorize AS u;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -506,12 +511,12 @@ $@" SELECT u.isAdmin FROM terminal_archive.users_authorize AS u;  ";
             try
             {
                 var sql =
-$@" SELECT g.id, g.name FROM terminal_archive.users AS u
- LEFT JOIN terminal_archive.user_roles AS ur ON u.id = ur.id_user 
- LEFT JOIN terminal_archive.roles AS r ON ur.id_role = r.id
- LEFT JOIN terminal_archive.groups AS g ON r.id_group = g.id
- LEFT JOIN terminal_archive.role_rights AS rr ON rr.id_role = r.id
- LEFT JOIN terminal_archive.rights AS rg ON rr.id_right = rg.id
+$@" SELECT g.id, g.name FROM {DB}.users AS u
+ LEFT JOIN {DB}.user_roles AS ur ON u.id = ur.id_user 
+ LEFT JOIN {DB}.roles AS r ON ur.id_role = r.id
+ LEFT JOIN {DB}.groups AS g ON r.id_group = g.id
+ LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = r.id
+ LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
 WHERE u.name = '{name}' AND rg.name = '{right}'; ";
                 if (contextConn == null)
                     conn.Open();
@@ -560,10 +565,10 @@ WHERE u.name = '{name}' AND rg.name = '{right}'; ";
                 var groups = GetUserGroups(user, Constants.RightReadName, conn);
 
                 string sql =
-@" SELECT g.`id`, g.name, p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра`
- FROM terminal_archive.groups AS g 
- LEFT JOIN terminal_archive.parameter_groups AS pg ON pg.id_group = g.id 
- LEFT JOIN terminal_archive.parameters AS p ON pg.id_parameter = p.id ";
+$@" SELECT g.`id`, g.name, p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра`
+ FROM {DB}.groups AS g 
+ LEFT JOIN {DB}.parameter_groups AS pg ON pg.id_group = g.id 
+ LEFT JOIN {DB}.parameters AS p ON pg.id_parameter = p.id ";
                 if (groups != null && groups.Any())
                 {
                     var groupStr = groups.Select(t => t.Id.ToString())
@@ -625,10 +630,11 @@ $@" WHERE g.id in ( {groupStr} ) ";
                 if (!UserIsAdmin(user, conn))
                     throw new Exception("Unauthorize operation!");
 
-                const string sql = @" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
- FROM terminal_archive.users AS u
- LEFT JOIN terminal_archive.user_roles AS ur ON ur.id_user = u.id
- LEFT JOIN terminal_archive.roles AS r ON ur.id_role = r.id
+                string sql = 
+$@" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
+ FROM {DB}.users AS u
+ LEFT JOIN {DB}.user_roles AS ur ON ur.id_user = u.id
+ LEFT JOIN {DB}.roles AS r ON ur.id_role = r.id
  ORDER BY u.id asc; ";
                 var command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -674,10 +680,11 @@ $@" WHERE g.id in ( {groupStr} ) ";
             {
                 conn.Open();
 
-                string sql = $@" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
- FROM terminal_archive.users AS u
- LEFT JOIN terminal_archive.user_roles AS ur ON ur.id_user = u.id
- LEFT JOIN terminal_archive.roles AS r ON ur.id_role = r.id
+                string sql = 
+$@" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
+ FROM {DB}.users AS u
+ LEFT JOIN {DB}.user_roles AS ur ON ur.id_user = u.id
+ LEFT JOIN {DB}.roles AS r ON ur.id_role = r.id
  WHERE u.id = {id}";
                 if (!UserIsAdmin(user, conn))
                     sql += 
@@ -728,8 +735,9 @@ $@" AND u.name = '{user}'";
             {
                 conn.Open();
 
-                string sql = $@" SELECT u.`id`
- FROM terminal_archive.users AS u
+                string sql = 
+$@" SELECT u.`id`
+ FROM {DB}.users AS u
  WHERE  u.name = '{name}'; ";
                 var command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -759,11 +767,12 @@ $@" AND u.name = '{user}'";
                 if (!UserIsAdmin(user, conn))
                     throw new Exception("Unauthorize operation!");
 
-                const string sql = @" SELECT r.`id`, r.`name`, r.`id_group`, rg.`id`, rg.`name`, g.`name`
- FROM terminal_archive.roles AS r
- LEFT JOIN terminal_archive.role_rights AS rr ON rr.id_role = r.id
- LEFT JOIN terminal_archive.rights AS rg ON rr.id_right = rg.id
- LEFT JOIN terminal_archive.groups AS g ON r.id_group = g.id
+                string sql =
+$@" SELECT r.`id`, r.`name`, r.`id_group`, rg.`id`, rg.`name`, g.`name`
+ FROM {DB}.roles AS r
+ LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = r.id
+ LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
+ LEFT JOIN {DB}.groups AS g ON r.id_group = g.id
  ORDER BY r.`id_group` asc, r.id asc; ";
                 MySqlCommand command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -813,9 +822,9 @@ $@" AND u.name = '{user}'";
                 if (!UserIsAdmin(user, conn))
                     throw new Exception("Unauthorize operation!");
 
-                const string sql =
-@" SELECT rg.`id`, rg.`name`
- FROM terminal_archive.rights AS rg
+                string sql =
+$@" SELECT rg.`id`, rg.`name`
+ FROM {DB}.rights AS rg
  ORDER BY rg.id asc; ";
                 MySqlCommand command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -849,11 +858,11 @@ $@" AND u.name = '{user}'";
 
                 var groupStr = idGroup == 0 ? " is null" : " = " + idGroup;
                 string sql =
-@" SELECT p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` , p.description AS `описание`
- FROM terminal_archive.parameters AS p ";
+$@" SELECT p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` , p.description AS `описание`
+ FROM {DB}.parameters AS p ";
 if (idGroup > 0)
                     sql += 
-$@" LEFT JOIN terminal_archive.parameter_groups AS pg ON pg.id_parameter = p.id
+$@" LEFT JOIN {DB}.parameter_groups AS pg ON pg.id_parameter = p.id
  WHERE pg.id_group = {idGroup} ";
                     sql += 
 " ORDER BY p.id asc; ";
@@ -914,7 +923,7 @@ $@" LEFT JOIN terminal_archive.parameter_groups AS pg ON pg.id_parameter = p.id
                     }
 
                     string deleteSql =
-$@" INSERT INTO `terminal_archive`.`terminal_parameters`
+$@" INSERT INTO `{DB}`.`terminal_parameters`
  (`id_terminal`, `id_parameter`, `value`) 
  VALUES {tParsUpd}
  ON DUPLICATE KEY UPDATE    
@@ -968,7 +977,7 @@ $@" INSERT INTO `terminal_archive`.`terminal_parameters`
                     }
 
                     string deleteSql =
-$@" DELETE ur FROM `terminal_archive`.`user_roles` AS ur
+$@" DELETE ur FROM `{DB}`.`user_roles` AS ur
  WHERE {uRlsDel} ;";
                     var deleteCommand = new MySqlCommand(deleteSql, conn);
                     var deleted = deleteCommand.ExecuteNonQuery();
@@ -992,7 +1001,7 @@ $@" DELETE ur FROM `terminal_archive`.`user_roles` AS ur
                     }
 
                     string addSql =
-$@" INSERT INTO `terminal_archive`.`user_roles` 
+$@" INSERT INTO `{DB}`.`user_roles` 
  (`id_user`, `id_role`) VALUES {uRolAdd} ;";
                     var addCommand = new MySqlCommand(addSql, conn);
                     int added = addCommand.ExecuteNonQuery();
@@ -1029,7 +1038,7 @@ $@" INSERT INTO `terminal_archive`.`user_roles`
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT u.id FROM terminal_archive.users AS u
+$@" SELECT u.id FROM {DB}.users AS u
  WHERE u.name = '{name}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1052,7 +1061,8 @@ $@" SELECT u.id FROM terminal_archive.users AS u
                     password = sBuilder.ToString();
                 }
 
-                string addSql = $@" INSERT INTO `terminal_archive`.`users`
+                string addSql = 
+$@" INSERT INTO `{DB}`.`users`
 (`name`, `pass`) 
 VALUES ('{name}', '{password}'); ";
 
@@ -1100,7 +1110,7 @@ VALUES ('{name}', '{password}'); ";
                 }
 
                 string selectSql =
-$@" SELECT u.id FROM terminal_archive.users AS u
+$@" SELECT u.id FROM {DB}.users AS u
  WHERE u.id = '{id}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1113,7 +1123,7 @@ $@" SELECT u.id FROM terminal_archive.users AS u
                     throw new Exception($"No user with id={id}!");
 
                 string updateSql = string.Format(
-$@" UPDATE `terminal_archive`.`users` AS u
+$@" UPDATE `{DB}`.`users` AS u
  SET /*`name` = '{name}',*/`pass` = '{password}'
  WHERE u.`id` = '{id}' ; ");
 
@@ -1146,7 +1156,7 @@ $@" UPDATE `terminal_archive`.`users` AS u
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT r.id FROM terminal_archive.roles AS r
+$@" SELECT r.id FROM {DB}.roles AS r
  WHERE r.name = '{name}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1159,7 +1169,8 @@ $@" SELECT r.id FROM terminal_archive.roles AS r
                     throw new Exception("Role already exist!");
 
                 string groupToQuery = (group == null ? " IS null " : $" = '{group}' ");
-                string addSql = $@" INSERT INTO `terminal_archive`.`roles`
+                string addSql = 
+$@" INSERT INTO `{DB}`.`roles`
 (`name`, `id_group`) 
 VALUES ('{name}', {groupToQuery}); ";
 
@@ -1192,7 +1203,7 @@ VALUES ('{name}', {groupToQuery}); ";
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT r.id FROM terminal_archive.roles AS r
+$@" SELECT r.id FROM {DB}.roles AS r
  WHERE r.id = '{id}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1206,7 +1217,7 @@ $@" SELECT r.id FROM terminal_archive.roles AS r
 
                 string groupToQuery = (group == null ? " IS null " : $" = '{group}' ");
                 string updateSql = string.Format(
-$@" UPDATE `terminal_archive`.`roles` AS r
+$@" UPDATE `{DB}`.`roles` AS r
  SET `name` = '{name}', `id_group` {groupToQuery}
  WHERE r.`id` = '{id}' ; ");
 
@@ -1239,7 +1250,7 @@ $@" UPDATE `terminal_archive`.`roles` AS r
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT g.id FROM terminal_archive.groups AS g
+$@" SELECT g.id FROM {DB}.groups AS g
  WHERE g.name = '{name}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1251,9 +1262,10 @@ $@" SELECT g.id FROM terminal_archive.groups AS g
                 if (roleCnt > 0)
                     throw new Exception("Group already exist!");
 
-                string addSql = $@" INSERT INTO `terminal_archive`.`groups`
-(`name`) 
-VALUES ('{name}'); ";
+                string addSql = 
+$@" INSERT INTO `{DB}`.`groups`
+ (`name`) 
+ VALUES ('{name}'); ";
 
                 var addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -1284,7 +1296,7 @@ VALUES ('{name}'); ";
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT g.id FROM terminal_archive.groups AS g
+$@" SELECT g.id FROM {DB}.groups AS g
  WHERE g.id = '{id}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1297,7 +1309,7 @@ $@" SELECT g.id FROM terminal_archive.groups AS g
                     throw new Exception($"No group with id={id}!");
 
                 string updateSql = string.Format(
-$@" UPDATE `terminal_archive`.`groups` AS g
+$@" UPDATE `{DB}`.`groups` AS g
  SET `name` = '{name}'
  WHERE g.`id` = '{id}' ; ");
 
@@ -1324,7 +1336,8 @@ $@" UPDATE `terminal_archive`.`groups` AS g
                 conn.Open();
 
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
-                var sql = " SELECT COUNT(t.id) FROM terminal_archive.terminals AS t ";
+                var sql = 
+$@" SELECT COUNT(t.id) FROM {DB}.terminals AS t ";
                 if (groups != null && groups.Any())
                 {
                     var groupStr = groups.Select(t => t.Id.ToString())
@@ -1367,10 +1380,10 @@ $@" WHERE t.id_group in ( {groupStr} ); ";
                 conn.Open();
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
                 var sql =
-@" SELECT COUNT(id) FROM terminal_archive.orders AS o ";
+@" SELECT COUNT(id) FROM {DB}.orders AS o ";
                 if (groups != null && groups.Any())
                     sql +=
-@" LEFT JOIN terminal_archive.terminals AS t ON t.id = o.id_terminal ";
+@" LEFT JOIN {DB}.terminals AS t ON t.id = o.id_terminal ";
                 sql +=
 $@" WHERE o.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1416,9 +1429,9 @@ $@" WHERE o.id_terminal = {idTerminal} ";
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
 
                 var sql =
-@" SELECT t.`id`, g.`id`, g.`name`, t.`name`, t.`address` , t.`id_hasp`
- FROM terminal_archive.terminals AS t 
- LEFT JOIN terminal_archive.groups AS g ON g.id = t.id_group ";
+$@" SELECT t.`id`, g.`id`, g.`name`, t.`name`, t.`address` , t.`id_hasp`
+ FROM {DB}.terminals AS t 
+ LEFT JOIN {DB}.groups AS g ON g.id = t.id_group ";
                 if (groups != null && groups.Any())
                 {
                     var groupStr = groups.Select(t => t.Id.ToString())
@@ -1430,7 +1443,7 @@ $@" WHERE t.id_group in ( {groupStr} ) ";
                 else if (groups == null)
                     throw new Exception("Попытка доступа забаненного пользователя!");
 
-                sql += @" ORDER BY t.id asc ";
+                sql +=$@" ORDER BY t.id asc ";
 
                 if (!all)
                     sql += $@" LIMIT {(currentPageTerminal - 1) * pageSize},{pageSize} ";
@@ -1490,8 +1503,8 @@ $@" WHERE t.id_group in ( {groupStr} ) ";
 
                 var sql =
 $@" SELECT t.`id`, g.`id`, g.`name`, t.`name`, t.`address` , t.`id_hasp`
- FROM terminal_archive.terminals AS t 
- LEFT JOIN terminal_archive.groups AS g ON g.id = t.id_group 
+ FROM {DB}.terminals AS t 
+ LEFT JOIN {DB}.groups AS g ON g.id = t.id_group 
  WHERE t.id = {id} ";
 
                 if (groups != null && groups.Any())
@@ -1505,7 +1518,7 @@ $@" AND t.id_group in ( {groupStr} ) ";
                 else if (groups == null)
                     throw new Exception("Попытка доступа забаненного пользователя!");
 
-                sql += @" ORDER BY t.id asc ";
+                sql +=$@" ORDER BY t.id asc ";
                 sql += " ; ";
                 
                 var command = new MySqlCommand(sql, conn);
@@ -1558,16 +1571,16 @@ $@" AND t.id_group in ( {groupStr} ) ";
 
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
                 var sql =
-                    @" SELECT o.`id`, `RNN`, s.id, s.name AS `состояние`, t.id, t.`name` AS `терминал` ,
+$@" SELECT o.`id`, `RNN`, s.id, s.name AS `состояние`, t.id, t.`name` AS `терминал` ,
  d.id, d.description AS `доп. параметр`, od.value AS `значение`,
  f.id, f.`name` AS `топливо` , p.id, p.`name` AS `оплата` , o.id_pump AS `колонка`,  
- `pre_price` ,  `price` ,  `pre_quantity` ,  `quantity` ,  `pre_summ` ,  `summ` FROM terminal_archive.orders AS o
- LEFT JOIN terminal_archive.order_fuels AS f ON o.id_fuel = f.id
- LEFT JOIN terminal_archive.order_payment_types AS p ON o.id_payment = p.id
- LEFT JOIN terminal_archive.terminals AS t ON o.id_terminal = t.id
- LEFT JOIN terminal_archive.order_states AS s ON o.id_state = s.id
- LEFT JOIN terminal_archive.order_details AS od ON o.id = od.id_order
- LEFT JOIN terminal_archive.details AS d ON od.id_detail = d.id";
+ `pre_price` ,  `price` ,  `pre_quantity` ,  `quantity` ,  `pre_summ` ,  `summ` FROM {DB}.orders AS o
+ LEFT JOIN {DB}.order_fuels AS f ON o.id_fuel = f.id
+ LEFT JOIN {DB}.order_payment_types AS p ON o.id_payment = p.id
+ LEFT JOIN {DB}.terminals AS t ON o.id_terminal = t.id
+ LEFT JOIN {DB}.order_states AS s ON o.id_state = s.id
+ LEFT JOIN {DB}.order_details AS od ON o.id = od.id_order
+ LEFT JOIN {DB}.details AS d ON od.id_detail = d.id";
                 sql +=
 $@" WHERE t.id = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1650,9 +1663,9 @@ $@" ORDER BY o.id desc LIMIT {(currentPageOrder - 1) * pageSize},{pageSize};";
                 string sql =
 $@" SELECT p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` ,tp.value AS `значение параметра`, 
  tp.last_edit_date, tp.save_date, p.`description`
- FROM terminal_archive.terminals AS t
- LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
- LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
+ FROM {DB}.terminals AS t
+ LEFT JOIN {DB}.terminal_parameters AS tp ON t.id = tp.id_terminal
+ LEFT JOIN {DB}.parameters AS p ON tp.id_parameter = p.id
  WHERE t.id = {idTerminal} /*tp.save_date < tp.last_edit_date*/";
                 if (groups != null && groups.Any())
                 {
@@ -1715,11 +1728,11 @@ $@" ORDER BY p.id desc;";
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
 
                 var sql =
-@" SELECT COUNT(h.id)  FROM `terminal_archive`.`history` AS h 
- LEFT JOIN terminal_archive.orders AS o ON h.id_order = o.id ";
+@" SELECT COUNT(h.id)  FROM `{DB}`.`history` AS h 
+ LEFT JOIN {DB}.orders AS o ON h.id_order = o.id ";
                 if (groups != null && groups.Any())
                     sql +=
-@" LEFT JOIN terminal_archive.terminals AS t ON t.id = h.id_terminal";
+@" LEFT JOIN {DB}.terminals AS t ON t.id = h.id_terminal";
                 sql +=
 $@" WHERE h.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1773,11 +1786,11 @@ $@" AND o.`RNN` = '{rrn}'";
 
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
                 var sql =
-@" SELECT h.`id`, h.`date`, h.`id_terminal`, t.`name`, h.`id_order`, o.`RNN`, h.`id_state`, s.`name`, h.`trace`, h.`msg`
- FROM `terminal_archive`.`history` AS h
- LEFT JOIN terminal_archive.terminals AS t ON h.id_terminal = t.id
- LEFT JOIN terminal_archive.orders AS o ON h.id_order = o.id
- LEFT JOIN terminal_archive.order_states AS s ON h.id_state = s.id";
+$@" SELECT h.`id`, h.`date`, h.`id_terminal`, t.`name`, h.`id_order`, o.`RNN`, h.`id_state`, s.`name`, h.`trace`, h.`msg`
+ FROM `{DB}`.`history` AS h
+ LEFT JOIN {DB}.terminals AS t ON h.id_terminal = t.id
+ LEFT JOIN {DB}.orders AS o ON h.id_order = o.id
+ LEFT JOIN {DB}.order_states AS s ON h.id_state = s.id";
                 sql +=
 $@" WHERE h.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1849,10 +1862,10 @@ $@" SELECT t.`id`,
  p.id AS `id параметра`, p.name AS `имя параметра` ,p.path AS `путь параметра`, 
  tp.value AS `значение параметра`, 
  tp.last_edit_date, tp.save_date
- FROM terminal_archive.terminals AS t
- LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
- LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
- WHERE tp.save_date < tp.last_edit_date AND t.id_hasp = '{haspId}' /*AND t.id IN (SELECT tg.id_terminal FROM terminal_archive.terminal_groups AS tg WHERE tg.id_group = )*/
+ FROM {DB}.terminals AS t
+ LEFT JOIN {DB}.terminal_parameters AS tp ON t.id = tp.id_terminal
+ LEFT JOIN {DB}.parameters AS p ON tp.id_parameter = p.id
+ WHERE tp.save_date < tp.last_edit_date AND t.id_hasp = '{haspId}' /*AND t.id IN (SELECT tg.id_terminal FROM {DB}.terminal_groups AS tg WHERE tg.id_group = )*/
  ORDER BY t.id asc; ";
                 MySqlCommand command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -1903,7 +1916,7 @@ $@" SELECT t.`id`,
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT t.id FROM terminal_archive.terminals AS t
+$@" SELECT t.id FROM {DB}.terminals AS t
  WHERE t.id_hasp = '{haspId}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1917,9 +1930,10 @@ $@" SELECT t.id FROM terminal_archive.terminals AS t
 
                 var groupTxt = groupId > 0 ? $"'{groupId}'" : "null";
 
-                string addSql = $@" INSERT INTO `terminal_archive`.`terminals`
-(`id_hasp`, `id_group`, `address`, `name`) 
-VALUES ('{haspId}', {groupTxt}, '{address}','{name}') ; ";
+                string addSql = 
+$@" INSERT INTO `{DB}`.`terminals`
+ (`id_hasp`, `id_group`, `address`, `name`) 
+ VALUES ('{haspId}', {groupTxt}, '{address}','{name}') ; ";
 
                 var addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -1960,7 +1974,7 @@ VALUES ('{haspId}', {groupTxt}, '{address}','{name}') ; ";
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT t.id FROM terminal_archive.terminals AS t
+$@" SELECT t.id FROM {DB}.terminals AS t
  WHERE t.id = '{id}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -1975,7 +1989,7 @@ $@" SELECT t.id FROM terminal_archive.terminals AS t
                 string groupTxt = groupId > 0 ? $"'{groupId}'" : "null"; 
 
                 string updateSql = string.Format(
-$@" UPDATE `terminal_archive`.`terminals` AS t
+$@" UPDATE `{DB}`.`terminals` AS t
  SET `id_hasp` = '{haspId}',`id_group` = {groupTxt}, `address` = '{address}', `name` = '{name}'
  WHERE t.`id` = '{id}' ;");
 
@@ -2022,7 +2036,7 @@ $@" UPDATE `terminal_archive`.`terminals` AS t
                     }
 
                     string deleteSql =
-$@" DELETE pg FROM `terminal_archive`.`parameter_groups` AS pg
+$@" DELETE pg FROM `{DB}`.`parameter_groups` AS pg
  WHERE {pGrpsDel} ;";
                     var deleteCommand = new MySqlCommand(deleteSql, conn);
                     var deleted = deleteCommand.ExecuteNonQuery();
@@ -2046,7 +2060,7 @@ $@" DELETE pg FROM `terminal_archive`.`parameter_groups` AS pg
                     }
 
                     string addSql =
-$@" INSERT INTO `terminal_archive`.`parameter_groups` 
+$@" INSERT INTO `{DB}`.`parameter_groups` 
  (`id_parameter`, `id_group`) VALUES {pGrpsAdd} ;";
                     var addCommand = new MySqlCommand(addSql, conn);
                     int added = addCommand.ExecuteNonQuery();
@@ -2097,7 +2111,7 @@ $@" INSERT INTO `terminal_archive`.`parameter_groups`
                     }
 
                     string deleteSql =
-$@" DELETE rr FROM `terminal_archive`.`role_rights` AS rr
+$@" DELETE rr FROM `{DB}`.`role_rights` AS rr
  WHERE {rrDel} ;";
                     var deleteCommand = new MySqlCommand(deleteSql, conn);
                     var deleted = deleteCommand.ExecuteNonQuery();
@@ -2121,7 +2135,7 @@ $@" DELETE rr FROM `terminal_archive`.`role_rights` AS rr
                     }
 
                     string addSql =
-$@" INSERT INTO `terminal_archive`.`role_rights` 
+$@" INSERT INTO `{DB}`.`role_rights` 
  (`id_role`, `id_right`) VALUES {rrAdd} ;";
                     var addCommand = new MySqlCommand(addSql, conn);
                     int added = addCommand.ExecuteNonQuery();
@@ -2176,7 +2190,7 @@ $@" INSERT INTO `terminal_archive`.`role_rights`
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
-$@" SELECT t.id FROM terminal_archive.terminals AS t
+$@" SELECT t.id FROM {DB}.terminals AS t
  WHERE t.id_hasp = '{haspId}';";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
@@ -2189,7 +2203,7 @@ $@" SELECT t.id FROM terminal_archive.terminals AS t
                     throw new Exception("Wrong terminal Hasp!");
 
                 selectSql =
-$@" SELECT o.id, o.id_state FROM terminal_archive.orders AS o 
+$@" SELECT o.id, o.id_state FROM {DB}.orders AS o 
  WHERE o.RNN = '{rrn??""}';";
 
                 selectCommand = new MySqlCommand(selectSql, conn);
@@ -2213,8 +2227,9 @@ $@" SELECT o.id, o.id_state FROM terminal_archive.orders AS o
 
                 
 
-                var addSql = $@" INSERT INTO
- terminal_archive.`history` (
+                var addSql = 
+$@" INSERT INTO
+ {DB}.`history` (
  `id_terminal`, 
  `date`
  {(order < 0 ? "" : ",`id_order`")}
@@ -2271,7 +2286,7 @@ $@" SELECT o.id, o.id_state FROM terminal_archive.orders AS o
                 var now = DateTime.Now.AddSeconds(1).ToString("yyyy-MM-dd HH:mm:ss");
 
                 string updateSql =
-$@" UPDATE terminal_archive.terminal_parameters 
+$@" UPDATE {DB}.terminal_parameters 
  SET save_date = '{now}' 
  WHERE id_terminal = '{id}' AND id_parameter = '{parId}';";
 
@@ -2322,8 +2337,8 @@ $@" UPDATE terminal_archive.terminal_parameters
                 numberFormatInfo.NumberDecimalSeparator = ".";
 
                 string selectSql =
-$@" SELECT count(o.id), t.id FROM terminal_archive.terminals AS t
- LEFT JOIN terminal_archive.orders AS o   ON o.id_terminal = t.id 
+$@" SELECT count(o.id), t.id FROM {DB}.terminals AS t
+ LEFT JOIN {DB}.orders AS o   ON o.id_terminal = t.id 
  WHERE t.id_hasp = '{haspId}' AND o.RNN = '{rrn}';";
   //              o.id_terminal = {terminal} AND o.RNN = '';";
 
@@ -2341,7 +2356,7 @@ $@" SELECT count(o.id), t.id FROM terminal_archive.terminals AS t
                 {
                     reader.Close();
                     selectSql =
-$@" SELECT t.id FROM terminal_archive.terminals AS t
+$@" SELECT t.id FROM {DB}.terminals AS t
  WHERE t.id_hasp = '{haspId}';";
                     selectCommand = new MySqlCommand(selectSql, conn);
                     reader = selectCommand.ExecuteReader();
