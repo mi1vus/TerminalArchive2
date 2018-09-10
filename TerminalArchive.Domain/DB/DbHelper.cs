@@ -114,7 +114,7 @@ $@" INSERT INTO {DB}.role_authorize_rights SELECT r.id, r.id_role, r.id_right FR
             try
             {
                 var sql =
-$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}') ;  ";
+$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}' AND u.name <> 'AutoAdmin') ;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -130,7 +130,7 @@ $@" DELETE u FROM {DB}.users_authorize AS u WHERE u.name = '{name}';  ";
 
                 string isAdminStr = isAdmin ? " true " : " false ";
                 string addSql =
-$@" INSERT INTO {DB}.users_authorize SELECT u.id, u.name, {isAdminStr} FROM {DB}.users AS u WHERE u.name = '{name}'; ";
+$@" INSERT INTO {DB}.users_authorize SELECT u.id, u.name, {isAdminStr} FROM {DB}.users AS u WHERE u.name = '{name}' AND u.name <> 'AutoAdmin' ; ";
 
                 var addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -139,7 +139,7 @@ $@" INSERT INTO {DB}.users_authorize SELECT u.id, u.name, {isAdminStr} FROM {DB}
                     throw new Exception("User not added!");
 
                 addSql =
-$@" INSERT INTO {DB}.users_authorize_roles SELECT * FROM {DB}.user_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}'); ";
+$@" INSERT INTO {DB}.users_authorize_roles SELECT * FROM {DB}.user_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}'  AND u.name <> 'AutoAdmin' ); ";
 
                 addCommand = new MySqlCommand(addSql, conn);
                 result = addCommand.ExecuteNonQuery();
@@ -166,7 +166,7 @@ $@" INSERT INTO {DB}.users_authorize_roles SELECT * FROM {DB}.user_roles AS r WH
             try
             {
                 var sql =
-$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}') ;  ";
+$@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id FROM {DB}.users AS u WHERE u.name = '{name}'  AND u.name <> 'AutoAdmin' ) ;  ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -175,7 +175,7 @@ $@" DELETE r FROM {DB}.users_authorize_roles AS r WHERE r.id_user = (SELECT u.id
                 result = deleteCommand.ExecuteNonQuery();
 
                 sql =
-$@" DELETE u FROM {DB}.users_authorize AS u WHERE u.name = '{name}';  ";
+$@" DELETE u FROM {DB}.users_authorize AS u WHERE u.name = '{name}'  AND u.name <> 'AutoAdmin' ;  ";
 
                 deleteCommand = new MySqlCommand(sql, conn);
                 result = deleteCommand.ExecuteNonQuery();
@@ -303,7 +303,7 @@ $@" SELECT MIN(rg.name not like 'None') FROM {DB}.users AS u
  LEFT JOIN {DB}.roles AS rl ON ur.id_role = rl.id
  LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = rl.id
  LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
- WHERE u.name = '{name}' ; ";
+ WHERE u.name = '{name}'  AND u.name <> 'AutoAdmin' ; ";
 
                 if (contextConn == null)
                     conn.Open();
@@ -347,7 +347,7 @@ $@" SELECT COUNT(u.id) FROM {DB}.users AS u
  LEFT JOIN {DB}.roles AS rl ON ur.id_role = rl.id
  LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = rl.id
  LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
- WHERE u.name = '{name}' AND rg.name = '{role}' AND rl.id_group {groupToQuery} AND rg.name <> 'None' ; ";
+ WHERE u.name = '{name}' AND rg.name = '{role}' AND rl.id_group {groupToQuery} AND rg.name <> 'None'  AND u.name <> 'AutoAdmin' ; ";
                 var conn = contextConn ?? new MySqlConnection(ConnStr);
                 if (contextConn == null)
                     conn.Open();
@@ -422,10 +422,10 @@ $@" SELECT COUNT(u.id) FROM {DB}.users_authorize AS u
 
         public static bool UserIsAdminDB(string name, MySqlConnection contextConn = null)
         {
-            bool result = false;
-            if (string.IsNullOrEmpty(name))
-                return result;
+            if (string.IsNullOrEmpty(name) || name == "AutoAdmin")
+                return false;
 
+            bool result = false;
             //var groups = GetUserGroups(name, Constants.RightReadName, contextConn);
             //groups.AddRange(GetUserGroups(name, Constants.RightWriteName, contextConn));
             var conn = contextConn ?? new MySqlConnection(ConnStr);
@@ -450,10 +450,10 @@ $@" SELECT COUNT(u.id) FROM {DB}.users_authorize AS u
 
         public static bool UserIsAdmin(string name, MySqlConnection contextConn = null)
         {
-            bool result = false;
-            if (string.IsNullOrEmpty(name))
-                return result;
+            if (string.IsNullOrEmpty(name) || name == "AutoAdmin")
+                return false;
 
+            bool result = false;
             //var groups = GetUserGroups(name, Constants.RightReadName, contextConn);
             //groups.AddRange(GetUserGroups(name, Constants.RightWriteName, contextConn));
             var conn = contextConn ?? new MySqlConnection(ConnStr);
@@ -517,7 +517,7 @@ $@" SELECT g.id, g.name FROM {DB}.users AS u
  LEFT JOIN {DB}.groups AS g ON r.id_group = g.id
  LEFT JOIN {DB}.role_rights AS rr ON rr.id_role = r.id
  LEFT JOIN {DB}.rights AS rg ON rr.id_right = rg.id
-WHERE u.name = '{name}' AND rg.name = '{right}'; ";
+WHERE u.name = '{name}' AND rg.name = '{right}'  AND u.name <> 'AutoAdmin' ; ";
                 if (contextConn == null)
                     conn.Open();
 
@@ -635,6 +635,7 @@ $@" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
  FROM {DB}.users AS u
  LEFT JOIN {DB}.user_roles AS ur ON ur.id_user = u.id
  LEFT JOIN {DB}.roles AS r ON ur.id_role = r.id
+ WHERE  u.name <> 'AutoAdmin'
  ORDER BY u.id asc; ";
                 var command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -685,7 +686,7 @@ $@" SELECT u.`id`, u.`name`, r.`id`, r.`name`, r.`id_group`
  FROM {DB}.users AS u
  LEFT JOIN {DB}.user_roles AS ur ON ur.id_user = u.id
  LEFT JOIN {DB}.roles AS r ON ur.id_role = r.id
- WHERE u.id = {id}";
+ WHERE u.id = {id}  AND u.name <> 'AutoAdmin' ";
                 if (!UserIsAdmin(user, conn))
                     sql += 
 $@" AND u.name = '{user}'";
@@ -738,7 +739,7 @@ $@" AND u.name = '{user}'";
                 string sql = 
 $@" SELECT u.`id`
  FROM {DB}.users AS u
- WHERE  u.name = '{name}'; ";
+ WHERE  u.name = '{name}'  AND u.name <> 'AutoAdmin' ; ";
                 var command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
                 while (dataReader.HasRows && dataReader.Read())
@@ -848,9 +849,14 @@ $@" SELECT rg.`id`, rg.`name`
             return rights;
         }
 
-        public static List<Parameter> GetAllParameters(int idGroup)
+        /// <summary>
+        /// From DB
+        /// </summary>
+        /// <param name="idGroup"> -1 - all in base; 0-null, 1.. only this group</param>
+        /// <returns></returns>
+        public static Dictionary<int, Parameter> GetAllParameters(int idGroup)
          {
-            var parameters = new List<Parameter>();
+            var parameters = new Dictionary<int, Parameter>();
             var conn = new MySqlConnection(ConnStr);
             try
             {
@@ -860,10 +866,10 @@ $@" SELECT rg.`id`, rg.`name`
                 string sql =
 $@" SELECT p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` , p.description AS `описание`
  FROM {DB}.parameters AS p ";
-if (idGroup > 0)
+if (idGroup >= 0)
                     sql += 
 $@" LEFT JOIN {DB}.parameter_groups AS pg ON pg.id_parameter = p.id
- WHERE pg.id_group = {idGroup} ";
+ WHERE pg.id_group {groupStr} ";
                     sql += 
 " ORDER BY p.id asc; ";
                 MySqlCommand command = new MySqlCommand(sql, conn);
@@ -871,13 +877,15 @@ $@" LEFT JOIN {DB}.parameter_groups AS pg ON pg.id_parameter = p.id
                 while (dataReader.HasRows && dataReader.Read())
                 {
                     var idRight = dataReader.GetInt32(0);
-                    parameters.Add(new Parameter()
                     {
-                        Id = idRight,
-                        Name = dataReader.GetString(1),
-                        Path = dataReader.GetString(2),
-                        Description = dataReader.GetString(3),
-                    });
+                        parameters[idRight] = new Parameter()
+                        {
+                            Id = idRight,
+                            Name = dataReader.GetString(1),
+                            Path = dataReader.GetString(2),
+                            Description = dataReader.GetString(3),
+                        };
+                    }
                 }
             }
             catch (Exception ex)
@@ -1039,7 +1047,7 @@ $@" INSERT INTO `{DB}`.`user_roles`
 
                 string selectSql =
 $@" SELECT u.id FROM {DB}.users AS u
- WHERE u.name = '{name}';";
+ WHERE u.name = '{name}'  AND u.name <> 'AutoAdmin' ;";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
                 int userCnt = -1;
@@ -1062,7 +1070,7 @@ $@" SELECT u.id FROM {DB}.users AS u
                 }
 
                 string addSql = 
-$@" INSERT INTO `{DB}`.`users`
+$@" INSERT INTO {DB}.users
 (`name`, `pass`) 
 VALUES ('{name}', '{password}'); ";
 
@@ -1111,7 +1119,7 @@ VALUES ('{name}', '{password}'); ";
 
                 string selectSql =
 $@" SELECT u.id FROM {DB}.users AS u
- WHERE u.id = '{id}';";
+ WHERE u.id = '{id}'  AND u.name <> 'AutoAdmin' ;";
                 var selectCommand = new MySqlCommand(selectSql, conn);
                 var reader = selectCommand.ExecuteReader();
                 int userCnt = -1;
@@ -1123,9 +1131,9 @@ $@" SELECT u.id FROM {DB}.users AS u
                     throw new Exception($"No user with id={id}!");
 
                 string updateSql = string.Format(
-$@" UPDATE `{DB}`.`users` AS u
+$@" UPDATE {DB}.users AS u
  SET /*`name` = '{name}',*/`pass` = '{password}'
- WHERE u.`id` = '{id}' ; ");
+ WHERE u.`id` = '{id}'  AND u.name <> 'AutoAdmin' ; ");
 
                 var updateCommand = new MySqlCommand(updateSql, conn);
                 result = updateCommand.ExecuteNonQuery();
@@ -1312,6 +1320,98 @@ $@" SELECT g.id FROM {DB}.groups AS g
 $@" UPDATE `{DB}`.`groups` AS g
  SET `name` = '{name}'
  WHERE g.`id` = '{id}' ; ");
+
+                var updateCommand = new MySqlCommand(updateSql, conn);
+                result = updateCommand.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                result = 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return result > 0;
+        }
+
+        public static bool AddParameter(
+            string name, string path, string description,
+            string user/*, string pass*/
+        )
+                {
+                    int result;
+                    var conn = new MySqlConnection(ConnStr);
+                    try
+                    {
+                        conn.Open();
+
+                        if (!UserIsAdmin(user, conn))
+                            throw new Exception("Unauthorize operation!");
+
+                        string selectSql =
+        $@" SELECT p.id FROM {DB}.parameters AS p
+         WHERE p.name = '{name}';";
+                        var selectCommand = new MySqlCommand(selectSql, conn);
+                        var reader = selectCommand.ExecuteReader();
+                        int roleCnt = -1;
+                        while (reader.Read())
+                            roleCnt = reader.GetInt32(0);
+                        reader.Close();
+
+                        if (roleCnt > 0)
+                            throw new Exception("Parameter already exist!");
+
+                        string addSql =
+        $@" INSERT INTO `{DB}`.`parameters`
+         (`name`,`path`,`description`) 
+         VALUES ('{name}','{path}','{description}'); ";
+
+                        var addCommand = new MySqlCommand(addSql, conn);
+                        result = addCommand.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        result = 0;
+                    }
+                    finally
+                    {
+                        conn.Close();
+                    }
+                    return result > 0;
+                }
+
+        public static bool EditParameter(int id,
+            string name, string path, string description,
+            string user/*, string pass*/
+        )
+        {
+            int result;
+            var conn = new MySqlConnection(ConnStr);
+            try
+            {
+                conn.Open();
+
+                if (!UserIsAdmin(user, conn))
+                    throw new Exception("Unauthorize operation!");
+
+                string selectSql =
+$@" SELECT p.id FROM {DB}.parameters AS p
+    WHERE p.id = '{id}';";
+                var selectCommand = new MySqlCommand(selectSql, conn);
+                var reader = selectCommand.ExecuteReader();
+                int userCnt = -1;
+                while (reader.Read())
+                    userCnt = reader.GetInt32(0);
+                reader.Close();
+
+                if (userCnt < 0)
+                    throw new Exception($"No parameter with id={id}!");
+
+                string updateSql = string.Format(
+$@" UPDATE `{DB}`.`parameters` AS p
+ SET `name` = '{name}', `path` = '{path}', `description` = '{description}'
+ WHERE p.`id` = '{id}' ; ");
 
                 var updateCommand = new MySqlCommand(updateSql, conn);
                 result = updateCommand.ExecuteNonQuery();
@@ -1854,7 +1954,7 @@ $@" ORDER BY h.id desc LIMIT {(currentPageHistory - 1) * pageSize},{pageSize};";
             {
                 conn.Open();
 
-                if (!UserIsAdmin(user, conn))
+                if (user != "AutoAdmin"/*!UserIsAdmin(user, conn)*/)
                     throw new Exception("Unauthorize operation!");
 
                 string sql =
@@ -2276,7 +2376,7 @@ $@" INSERT INTO
             {
                 conn.Open();
 
-                if (!UserIsAdmin(user, conn))
+                if (user != "AutoAdmin"/*!UserIsAdmin(user, conn)*/)
                     throw new Exception("Unauthorize operation!");
 
                 var numberFormatInfo = new System.Globalization.CultureInfo("en-Us", false).NumberFormat;
@@ -2329,7 +2429,7 @@ $@" UPDATE {DB}.terminal_parameters
             {
                 conn.Open();
 
-                if (!UserIsAdmin(user, conn))
+                if (user != "AutoAdmin"/*!UserIsAdmin(user, conn)*/)
                     throw new Exception("Unauthorize operation!");
 
                 var numberFormatInfo = new System.Globalization.CultureInfo("en-Us", false).NumberFormat;

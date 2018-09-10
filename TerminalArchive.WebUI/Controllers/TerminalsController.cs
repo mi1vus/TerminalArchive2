@@ -17,11 +17,17 @@ namespace TerminalArchive.WebUI.Controllers
 
         public ActionResult GetParameters(string HaspId, string User, string Pass)
         {
+            if (User != "AutoAdmin")
+                return View("Unauthorize");
+
             return Json(DbHelper.GetParametersForUpdate(HaspId, User, Pass));
         }
 
         public int UpdateSaveDate(int TId, int ParId, string User, string Pass)
         {
+            if (User != "AutoAdmin")
+                return 0;
+
             return DbHelper.UpdateSaveDate(TId, ParId, User, Pass);
         }
 
@@ -41,6 +47,9 @@ namespace TerminalArchive.WebUI.Controllers
             string User, string Pass
             )
         {
+            if (User != "AutoAdmin")
+                return false;
+
             return DbHelper.AddNewOrder(RRN, HaspId, Fuel, Pump, Payment, State, PrePrice, Price, PreQuantity, Quantity, PreSumm, Summ, User,  Pass);
         }
     }

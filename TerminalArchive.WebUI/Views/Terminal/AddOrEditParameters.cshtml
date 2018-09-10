@@ -1,0 +1,110 @@
+﻿@using TerminalArchive.Domain.Models
+@model TerminalArchive.Domain.Models.Parameter
+
+@{
+    if (Model.Id != 0)
+    {
+        ViewBag.Title = "Редактирование параметра терминала";
+    }
+    else
+    {
+        ViewBag.Title = "Создание параметра терминала";
+    }
+}
+
+<div class="page-header">
+    <h3>@ViewBag.Title</h3>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div>
+        <div class="form-group">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <h3>Данные</h3>
+
+            @*@Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Path, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Path, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Path, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Value, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Save" class="btn btn-default" />
+                    </div>*@
+
+            @foreach (var property in ViewData.ModelMetadata.Properties)
+            {
+                if (property.PropertyName == "Id")
+                {
+                    Html.Hidden(property.PropertyName);
+                }
+                @*else if (property.PropertyName == "IdGroup")
+                {
+                    <div class="form-group">
+                        <tr>
+                            <td>
+                                <label>@(property.DisplayName ?? property.PropertyName)</label>
+                            </td>
+                            <td>
+                                <div>
+                                    @Html.DropDownListFor(model => model.IdGroup, new SelectList((IEnumerable<Group>)ViewBag.Groups, "Id", "Name", "None"), new { @class = "form-control" })
+                                </div>
+                            </td>
+                        </tr>
+                    </div>
+                }*@
+                else if (property.PropertyName != "IdGroup" &&
+                         property.PropertyName != "Group" &&
+                         property.PropertyName != "TId" &&
+                         property.PropertyName != "Value" &&
+                         property.PropertyName != "LastEditTime" &&
+                         property.PropertyName != "SaveTime" &&
+                         property.PropertyName != "Saved")
+                {
+                    <div class="form-group">
+                        <label>@(property.DisplayName ?? property.PropertyName)</label>
+                        <div>
+                            @Html.TextBox(property.PropertyName, null, new { @class = "form-control" })
+                            @Html.ValidationMessage(property.PropertyName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <hr />
+        <div class="form-group">
+            <div>
+                <input type="submit" value="Сохранить" class="btn btn-primary btn-block" />
+            </div>
+        </div>
+}

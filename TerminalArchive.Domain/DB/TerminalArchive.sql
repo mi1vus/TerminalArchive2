@@ -290,7 +290,8 @@ INSERT INTO `terminal_archive`.`groups` (`id`,`name`) VALUES
 ('1', 'Тестовая1'),
 ('2', 'Тестовая2'),
 ('3', 'Тестовая3'),
-('4', 'Тестовая4');
+('4', 'Тестовая4'),
+('5', 'Тестовая5');
 
 INSERT INTO `terminal_archive`.`terminals` (`id`,`id_hasp`, `id_group`, `address`, `name`) VALUES 
 ('1', '306061827', '1', 'Исследователей, 15', 'Тестовый1'),
@@ -303,7 +304,9 @@ INSERT INTO `terminal_archive`.`parameters` (`id`, `path`, `name`, `description`
 ('1', 'ASU_Z_Driver', 'tid', 'идентификатор терминала'),
 ('2', 'ASU_Z_Driver', 'server', 'ip сервера'),
 ('3', 'ASU_Z_Driver', 'pumps', 'доступные колонки'),
-('4', 'ASU_Z_Driver', 'card_add_zero', 'включено/выключено');
+('4', 'ASU_Z_Driver', 'card_add_zero', 'включено/выключено'),
+('5', 'ASU_Z_Driver', 'null_grp', 'проверка параметра для нулевой группы'),
+('6', 'ASU_Z_Driver', 'empty', 'проверка несуществующего параметра');
 
 
 INSERT INTO `terminal_archive`.`terminal_parameters` (`id_terminal`, `id_parameter`, `value`) VALUES 
@@ -318,7 +321,8 @@ INSERT INTO `terminal_archive`.`parameter_groups` (`id_parameter`, `id_group`) V
  ('3', '2'),
  ('4', '2'),
  ('4', '3'),
- ('2', '4');
+ ('2', '4'),
+ ('6', '1');
 
 INSERT INTO `terminal_archive`.`order_fuels` (`id`,`name`) VALUES 
 ('1', '-'),
@@ -439,56 +443,58 @@ INSERT INTO `terminal_archive`.`order_details` (`id`, `id_order`, `id_detail`, `
 ('2', '13', '2', '4');
 
 INSERT INTO `terminal_archive`.`users` (`id`, `name`, `pass`) VALUES 
-('1', 'Admin', '81dc9bdb52d04dc20036dbd8313ed055'),
-('2', 'Max', '81dc9bdb52d04dc20036dbd8313ed055'),
-('3', 'Lisa', '81dc9bdb52d04dc20036dbd8313ed055'),
-('4', 'John', '81dc9bdb52d04dc20036dbd8313ed055'),
-('5', 'Doug', '81dc9bdb52d04dc20036dbd8313ed055');
+('1', 'AutoAdmin', '81dc9bdb52d04dc20036dbd8313ed055'),
+('2', 'Admin', '81dc9bdb52d04dc20036dbd8313ed055'),
+('3', 'Max', '81dc9bdb52d04dc20036dbd8313ed055'),
+('4', 'Lisa', '81dc9bdb52d04dc20036dbd8313ed055'),
+('5', 'John', '81dc9bdb52d04dc20036dbd8313ed055'),
+('6', 'Doug', '81dc9bdb52d04dc20036dbd8313ed055');
 
 INSERT INTO `terminal_archive`.`user_roles` (`id`,`id_user`,`id_role`) VALUES 
-('1', '1', '1'),
-('2', '2', '2'),
-('3', '2', '3'),
+-- ('1', '1', '1'),
+('2', '2', '1'),
+('3', '3', '2'),
 ('4', '3', '3'),
-('5', '3', '4'),
-('6', '4', '5'),
-('7', '5', '6');
+('5', '4', '3'),
+('6', '4', '4'),
+('7', '5', '5'),
+('8', '6', '6');
 
 INSERT INTO `terminal_archive`.`history` (`id`, `date`, `id_terminal`, `id_order`, `id_state`, `trace`, `msg`) VALUES
 ('1', '2018-05-18 18:37:37', '1', '13', '2', NULL, 'заказ изменен'),
 ('2', '2018-05-18 18:48:02', '1', NULL, '1002', NULL, 'заказ изменен');
 
-SELECT t.`id`, t.`id_hasp`,  g.`name` AS `группа` ,  t.`address` , t.`name`, 
-p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` ,tp.value AS `значение параметра`, 
-tp.last_edit_date, tp.save_date
-FROM terminal_archive.terminals AS t
-LEFT JOIN terminal_archive.terminal_groups AS tg ON t.id = tg.id_terminal
-LEFT JOIN terminal_archive.groups AS g ON tg.id_group = g.id
-LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
-LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
-/*WHERE tp.save_date < tp.last_edit_date*/
-ORDER BY t.id desc;
+-- SELECT t.`id`, t.`id_hasp`,  g.`name` AS `группа` ,  t.`address` , t.`name`, 
+-- p.id AS `id параметра`, p.name AS `имя параметра`, p.path AS `путь параметра` ,tp.value AS `значение параметра`, 
+-- tp.last_edit_date, tp.save_date
+-- FROM terminal_archive.terminals AS t
+-- LEFT JOIN terminal_archive.terminal_groups AS tg ON t.id = tg.id_terminal
+-- LEFT JOIN terminal_archive.groups AS g ON tg.id_group = g.id
+-- LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
+-- LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
+-- /*WHERE tp.save_date < tp.last_edit_date*/
+-- ORDER BY t.id desc;
 
-SELECT o.`id`, s.name AS `состояние`,  t.`name` AS `терминал` ,  `RNN` , d.description AS `доп. параметр`, od.value AS `значение`,
-f.`name` AS `топливо` , p.`name` AS `оплата` , o.id_pump AS `колонка`,  
-`pre_price` ,  `price` ,  `pre_quantity` ,  `quantity` ,  `pre_summ` ,  `summ` FROM terminal_archive.orders AS o
-LEFT JOIN terminal_archive.order_fuels AS f ON o.id_fuel = f.id
-LEFT JOIN terminal_archive.order_payment_types AS p ON o.id_payment = p.id
-LEFT JOIN terminal_archive.terminals AS t ON o.id_terminal = t.id
-LEFT JOIN terminal_archive.order_states AS s ON o.id_state = s.id
-LEFT JOIN terminal_archive.order_details AS od ON o.id = od.id_order
-LEFT JOIN terminal_archive.details AS d ON od.id_detail = d.id
-/*WHERE t.id = 1*/
-ORDER BY o.id desc
-LIMIT 20;
+-- SELECT o.`id`, s.name AS `состояние`,  t.`name` AS `терминал` ,  `RNN` , d.description AS `доп. параметр`, od.value AS `значение`,
+-- f.`name` AS `топливо` , p.`name` AS `оплата` , o.id_pump AS `колонка`,  
+-- `pre_price` ,  `price` ,  `pre_quantity` ,  `quantity` ,  `pre_summ` ,  `summ` FROM terminal_archive.orders AS o
+-- LEFT JOIN terminal_archive.order_fuels AS f ON o.id_fuel = f.id
+-- LEFT JOIN terminal_archive.order_payment_types AS p ON o.id_payment = p.id
+-- LEFT JOIN terminal_archive.terminals AS t ON o.id_terminal = t.id
+-- LEFT JOIN terminal_archive.order_states AS s ON o.id_state = s.id
+-- LEFT JOIN terminal_archive.order_details AS od ON o.id = od.id_order
+-- LEFT JOIN terminal_archive.details AS d ON od.id_detail = d.id
+-- /*WHERE t.id = 1*/
+-- ORDER BY o.id desc
+-- LIMIT 20;
 
-SELECT t.`id`, t.`id_hasp`,  g.`name` AS `группа` ,  t.`address` , t.`name`, 
-p.id AS `id параметра`, p.name AS `имя параметра` ,p.path AS `путь параметра`, tp.value AS `значение параметра`, 
-tp.last_edit_date, tp.save_date
-FROM terminal_archive.terminals AS t
-LEFT JOIN terminal_archive.terminal_groups AS tg ON t.id = tg.id_terminal
-LEFT JOIN terminal_archive.groups AS g ON tg.id_group = g.id
-LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
-LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
-/*WHERE tp.save_date < tp.last_edit_date AND t.hasp_id='1'*/
-ORDER BY t.id asc; 
+-- SELECT t.`id`, t.`id_hasp`,  g.`name` AS `группа` ,  t.`address` , t.`name`, 
+-- p.id AS `id параметра`, p.name AS `имя параметра` ,p.path AS `путь параметра`, tp.value AS `значение параметра`, 
+-- tp.last_edit_date, tp.save_date
+-- FROM terminal_archive.terminals AS t
+-- LEFT JOIN terminal_archive.terminal_groups AS tg ON t.id = tg.id_terminal
+-- LEFT JOIN terminal_archive.groups AS g ON tg.id_group = g.id
+-- LEFT JOIN terminal_archive.terminal_parameters AS tp ON t.id = tp.id_terminal
+-- LEFT JOIN terminal_archive.parameters AS p ON tp.id_parameter = p.id
+-- /*WHERE tp.save_date < tp.last_edit_date AND t.hasp_id='1'*/
+-- ORDER BY t.id asc;  

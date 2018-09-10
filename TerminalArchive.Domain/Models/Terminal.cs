@@ -83,6 +83,10 @@ namespace TerminalArchive.Domain.Models
         //[Required(ErrorMessage = "Не указан id параметра терминала!")]
         //[ScaffoldColumn(false)]
         //public int TPId { get; set; }
+        [Display(Name = "Принадлежность к группе терминалов")]
+        public string IdGroup { get; set; }
+        [ScaffoldColumn(false)]
+        public Group Group { get; set; }
         [Display(Name = "Название")]
         public string Name { get; set; }
         [Display(Name = "Путь")]

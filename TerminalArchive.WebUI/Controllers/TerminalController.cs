@@ -129,7 +129,7 @@ namespace TerminalArchive.WebUI.Controllers
             
             var terminalsModel = new TerminalParametersViewModel
             {
-                Parameters = parameters.Select(p=>new Parameter
+                Parameters = parameters.Values.Select(p=>new Parameter
                 {
                     Id = p.Id,
                     TId = terminal?.Id ?? 0,//terminal?.Parameters?.FirstOrDefault(tp => tp.Id == p.Id)?.TId ?? 0,
@@ -263,7 +263,7 @@ namespace TerminalArchive.WebUI.Controllers
 
             var terminalsModel = new TerminalParametersViewModel
             {
-                Parameters = parameters.Select(p => new Parameter
+                Parameters = parameters.Values.Select(p => new Parameter
                 {
                     Id = p.Id,
                     TId = terminal?.Id ?? 0,//terminal?.Parameters?.FirstOrDefault(tp => tp.Id == p.Id)?.TId ?? 0,
@@ -395,6 +395,7 @@ namespace TerminalArchive.WebUI.Controllers
 
             return View(groups.Values);
         }
+
         [Authorize]
         public ActionResult AddOrEditGroup(int id = 0)
         {
@@ -402,24 +403,24 @@ namespace TerminalArchive.WebUI.Controllers
                 return View("Unauthorize");
 
             _repository.UserName = User?.Identity?.Name;
-            var allParameters = DbHelper.GetAllParameters(0);
+            var allParameters = DbHelper.GetAllParameters(-1);
 
             if (id != 0)
             {
                 var groups = DbHelper.GetAllGroups(_repository.UserName);
                 var group = groups.Values.Single(g => g.Id == id);
-                group.AllParameters = allParameters ?? new List<Parameter>();
+                group.AllParameters = allParameters.Values.ToList() ?? new List<Parameter>();
                 return View(group);
             }
             else
-                return View(new Group {AllParameters = allParameters ?? new List<Parameter>() });
+                return View(new Group {AllParameters = allParameters.Values.ToList() ?? new List<Parameter>() });
         }
 
         [Authorize]
         [HttpPost]
         public ActionResult AddOrEditGroup(int id = 0, Group group = null)
         {
-            var allParameters = DbHelper.GetAllParameters(0);
+            var allParameters = DbHelper.GetAllParameters(-1).Values.ToList();
             if (group == null) return View(new Group { AllParameters = allParameters ?? new List<Parameter>() });
             if (!DbHelper.UserIsAdmin(User?.Identity?.Name))
                 return View("Unauthorize");
@@ -495,5 +496,131 @@ namespace TerminalArchive.WebUI.Controllers
             ModelState.AddModelError("Db", "Параметры группы не были изменены! Повторите попытку или свяжитесь с администратором.");
             return View(group);
         }
+
+        [Authorize]
+        public ActionResult ListParameters()
+        {
+            if (!DbHelper.UserIsAdmin(User?.Identity?.Name))
+                return View("Unauthorize");
+
+            _repository.UserName = User?.Identity?.Name;
+            var parameters = DbHelper.GetAllParameters(-1);
+
+            return View(parameters.Values);
+        }
+
+        [Authorize]
+        public ActionResult AddOrEditParameters(int id = 0)
+        {
+            if (!DbHelper.UserIsAdmin(User?.Identity?.Name))
+                return View("Unauthorize");
+
+            _repository.UserName = User?.Identity?.Name;
+            var allParameters = DbHelper.GetAllParameters(-1);
+            //var groupsAll = DbHelper.GetAllGroups(_repository.UserName);
+            //var groups = new List<Group> { new Group { Id = -1, Name = "None" } };
+            //groups.AddRange(groupsAll.Values);
+            //ViewBag.Groups = groups;
+
+            if (id != 0 && allParameters.ContainsKey(id))
+            {
+                return View(allParameters[id]);
+            }
+            else
+                return View(new Parameter());
+        }
+
+        [Authorize]
+        [HttpPost]
+        public ActionResult AddOrEditParameters(int id = 0, Parameter param = null)
+        {
+            //var groupsAll = DbHelper.GetAllGroups(_repository.UserName);
+            //var groups = new List<Group> { new Group { Id = -1, Name = "None" } };
+            //groups.AddRange(groupsAll.Values);
+            //ViewBag.Groups = groups;
+
+            if (param == null) return View(new Parameter());
+
+            if (!DbHelper.UserIsAdmin(User?.Identity?.Name))
+                return View("Unauthorize");
+
+            _repository.UserName = User?.Identity?.Name;
+
+            if (!ModelState.IsValid) return View(param);
+
+            var result = param.Id != 0
+                ? DbHelper.EditParameter(param.Id, param.Name, param.Path, param.Description, _repository.UserName)
+                : DbHelper.AddParameter(param.Name, param.Path, param.Description, _repository.UserName);
+
+
+            //var allParameters = DbHelper.GetAllParameters(-1);
+            //@group = id == 0 ? groups.Values.Single(g => g.Id == groups.Values.Max(gid => gid.Id)) : groups.Values.Single(g => g.Id == id);
+            //group.AllParameters = allParameters ?? new List<Parameter>();
+            //var result = false;
+
+            //if (allParameters != null && allParameters.Any())
+            //{
+            //    var newChecked = Request.Form.AllKeys;
+            //    var toDelete = new List<ParameterGroup>();
+            //    var toAdd = new List<ParameterGroup>();
+            //    foreach (var parameter in allParameters)
+            //    {
+            //        var inNewChecked = newChecked.Any(k => k == $"chk_{parameter.Id}_{group.Id}" || k == $"chk_{parameter.Id}_0");
+            //        var inOldChecked = group.Parameters.Any(p => p.Id == parameter.Id);
+
+            //        if (inNewChecked && inOldChecked)
+            //            continue;
+            //        if (inNewChecked)
+            //            toAdd.Add(new ParameterGroup
+            //            {
+            //                IdParameter = parameter.Id,
+            //                IdGroup = group.Id
+            //            });
+            //        else if (inOldChecked)
+            //            toDelete.Add(new ParameterGroup
+            //            {
+            //                IdParameter = parameter.Id,
+            //                IdGroup = group.Id
+            //            });
+            //    }
+            //    if (toAdd.Any() || toDelete.Any())
+            //        result = DbHelper.UpdateParameterGroups(toAdd, toDelete, _repository.UserName);
+            //    else
+            //        result = true;
+            //}
+            //else
+            //    return RedirectToAction("ListGroups", "Terminal");
+            //if (result && allParameters.ContainsKey(id))
+            //{
+            //    return View(allParameters[id]);
+            //}
+            //else
+            //    return View(new Parameter());
+            if (!result)
+            {
+                ModelState.AddModelError("Db", "Параметр не была добавлен! Повторите попытку или свяжитесь с администратором.");
+                return View(param);
+            }
+            //if (result)
+            //{
+                //user = DbHelper.GetUser(_repository.UserName);
+                //roles = DbHelper.GetAllRoles(_repository.UserName);
+                //if (users == null || roles == null)
+                //    return View(new UserRolesViewModel());
+
+                //var modelNew = new UserViewModel
+                //{
+                //    User = users.Values,
+                //    Roles = roles.Values
+                //};
+
+                return RedirectToAction("ListParameters", "Terminal");
+            //}
+
+            //ModelState.AddModelError("Db", "Параметры группы не были изменены! Повторите попытку или свяжитесь с администратором.");
+            //return View(group);
+            //return View(param);
+        }
+
     }
 }

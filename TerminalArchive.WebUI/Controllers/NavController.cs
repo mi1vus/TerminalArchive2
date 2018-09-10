@@ -28,7 +28,9 @@ namespace TerminalArchive.WebUI.Controllers
                 menues[0].SubItems = new MenuInfo[]
                     {
                         new MenuInfo {Text = "Состояние терминалов", Controller = "TerminalMonitoring", Action = "List"},
-                        new MenuInfo {Text = "Добавить терминал", Controller = "Terminal", Action = "Add"}
+                        new MenuInfo {Text = "Добавить терминал", Controller = "Terminal", Action = "Add"},
+                        new MenuInfo {Text = "Параметры терминалов", Controller = "Terminal", Action = "ListParameters"},
+                        new MenuInfo {Text = "Добавить параметр", Controller = "Terminal", Action = "AddOrEditParameters"}
                     };
                 menues.Add(new MenuInfo { Text = "Группы терминалов", Controller = "Terminal", Action = "ListGroups",
                     SubItems = new MenuInfo[] 

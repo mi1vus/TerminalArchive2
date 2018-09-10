@@ -17,6 +17,12 @@ namespace TerminalArchive.WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (model.UserName == "AutoAdmin")
+                {
+                    ModelState.AddModelError("", "Неправильный логин или пароль");
+                    return View();
+                }
+
                 var authorize = DbHelper.IsAuthorizeUser(model.UserName, model.Password);
                 if (authorize != null && authorize.Value)
                 {
