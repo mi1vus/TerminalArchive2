@@ -49,6 +49,10 @@ namespace TerminalArchive.WebUI.Controllers
 
             int maxPages;
             var terminals = _repository.Terminals as IList<Terminal> ?? _repository.Terminals.ToList();
+            //List<Terminal> terminals = new List<Terminal>();
+            //for (int i = 0; i < 50; ++i)
+            //    for (int j = 0; j < terminalsSrc.Count; ++j)
+            //        terminals.Add(terminalsSrc[j]);
             TerminalNames = terminals.Select(t => t.Name).ToList();
             bool filter = FilterTerminalGroup > 0 || !string.IsNullOrWhiteSpace(FilterTerminalName);
             Func<Terminal, bool> PredicatGroup = t => true;

@@ -23,6 +23,9 @@ namespace TerminalArchive.WebUI.Controllers
             string User, string Pass
         )
         {
+            if (User != "AutoAdmin")
+                return false;
+
             return DbHelper.AddHistory(HaspId, RRN,Trace , Msg, ErrorLevel, Date, User, Pass);
         }
 

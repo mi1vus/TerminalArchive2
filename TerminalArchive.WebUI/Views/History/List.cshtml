@@ -11,6 +11,19 @@
     @Html.Partial("TerminalInfo", Model.Terminal)
 
         <div>
+
+            @if (!string.IsNullOrWhiteSpace(Request.Params["rrn"]))
+            {
+                <div class="btn-group pull-left">
+                    @Html.ActionLink("Вся история", "List", "History",
+                        new
+                        {
+                            page = 1
+                        }, new { @class = "btn btn-block btn-primary" }
+                        )
+                </div>
+            }
+
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -58,17 +71,7 @@
                     }
                 </tbody>
             </table>
-            @if (!string.IsNullOrWhiteSpace( Request.Params["rrn"]))
-            {
-                <div class="btn-group pull-right">
-                    @Html.ActionLink("Вся история", "List", "History",
-                        new
-                        {
-                            page = 1
-                        }, new { @class = "btn btn-block btn-primary"}
-                        )
-                </div>
-            }
+
 
         </div>
         <div class="btn-group pull-right">

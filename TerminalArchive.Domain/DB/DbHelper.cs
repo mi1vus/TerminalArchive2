@@ -1480,10 +1480,10 @@ $@" WHERE t.id_group in ( {groupStr} ); ";
                 conn.Open();
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
                 var sql =
-@" SELECT COUNT(id) FROM {DB}.orders AS o ";
+$@" SELECT COUNT(id) FROM {DB}.orders AS o ";
                 if (groups != null && groups.Any())
                     sql +=
-@" LEFT JOIN {DB}.terminals AS t ON t.id = o.id_terminal ";
+$@" LEFT JOIN {DB}.terminals AS t ON t.id = o.id_terminal ";
                 sql +=
 $@" WHERE o.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1828,11 +1828,11 @@ $@" ORDER BY p.id desc;";
                 var groups = GetUserGroups(userName, Constants.RightReadName, conn);
 
                 var sql =
-@" SELECT COUNT(h.id)  FROM `{DB}`.`history` AS h 
+$@" SELECT COUNT(h.id)  FROM `{DB}`.`history` AS h 
  LEFT JOIN {DB}.orders AS o ON h.id_order = o.id ";
                 if (groups != null && groups.Any())
                     sql +=
-@" LEFT JOIN {DB}.terminals AS t ON t.id = h.id_terminal";
+$@" LEFT JOIN {DB}.terminals AS t ON t.id = h.id_terminal";
                 sql +=
 $@" WHERE h.id_terminal = {idTerminal} ";
                 if (groups != null && groups.Any())
@@ -1909,7 +1909,7 @@ $@" AND t.id_group in ( {groupStr} ) ";
 $@" AND o.`RNN` = '{rrn}'";
                 }
                 sql +=
-$@" ORDER BY h.id desc LIMIT {(currentPageHistory - 1) * pageSize},{pageSize};";
+$@" ORDER BY h.`date` desc LIMIT {(currentPageHistory - 1) * pageSize},{pageSize};";
 
                 var command = new MySqlCommand(sql, conn);
                 var dataReader = command.ExecuteReader();
@@ -2276,7 +2276,7 @@ $@" INSERT INTO `{DB}`.`role_rights`
             string user, string pass
         )
         {
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass)
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(date)
                 || !(IsAuthorizeUser(user, pass) ?? false))
                 return false;
 
@@ -2286,7 +2286,7 @@ $@" INSERT INTO `{DB}`.`role_rights`
             {
                 conn.Open();
 
-                if (!UserIsAdmin(user, conn))
+                if (user != "AutoAdmin"/*!UserIsAdmin(user, conn)*/)
                     throw new Exception("Unauthorize operation!");
 
                 string selectSql =
@@ -2325,7 +2325,31 @@ $@" SELECT o.id, o.id_state FROM {DB}.orders AS o
                 //if (state <= 0)
                 //    throw new Exception("Wrong state (rrn)!");
 
-                
+
+                selectSql =
+$@" SELECT h.id FROM {DB}.`history` AS h 
+ WHERE h.id_terminal = {terminal} AND date = '{date}' ";
+                if (order > 0)
+                    selectSql +=
+$@" AND h.id_order =  {order} ";
+                if (state > 0)
+                    selectSql +=
+$@" AND h.id_state =  {state} ";
+
+                selectSql +=
+" ; ";
+
+                int duplicate = 0;
+                selectCommand = new MySqlCommand(selectSql, conn);
+                reader = selectCommand.ExecuteReader();
+                reader.Read();
+                if (reader.HasRows && !reader.IsDBNull(0))
+                    duplicate = reader.GetInt32(0);
+
+                reader.Close();
+
+                if (duplicate > 0)
+                    throw new Exception("Duplicate history message!");
 
                 var addSql = 
 $@" INSERT INTO
